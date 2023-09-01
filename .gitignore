@@ -1,0 +1,9 @@
+.dub
+docs.json
+__dummy.html
+*.o
+*.obj
+browserbook-test-library.exe
+browserbook-test-library.pdb
+browserbook.exe
+browserbook.pdb

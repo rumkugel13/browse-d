@@ -1,0 +1,4 @@
+{
+	"name": "browserbook",
+	"buildOptions-windows": ["debugInfoC"]
+}
