@@ -11,6 +11,5 @@ void main(string[] args)
     }
 
     URL url = new URL(test);
-    auto result = url.request();
-    url.show(result[1]);
+    url.load();
 }

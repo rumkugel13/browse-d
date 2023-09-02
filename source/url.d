@@ -105,6 +105,12 @@ class URL
         }
         writeln();
     }
+
+    void load()
+    {
+        auto result = request();
+        show(result[1]);
+    }
 }
 
 unittest
