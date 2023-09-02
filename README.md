@@ -6,6 +6,23 @@ Based on [the browser book](https://browser.engineering/)
 
 - [ ] Part 1: Drawing Graphics
   - [X] Downloading Web Pages
+    - [X] URL Parsing
+    - [X] Connecting to Host
+      - [ ] Encryption
+    - [X] Send HTTP Request
+    - [X] Receive and Split HTTP Response
+    - [X] Print Text
+    - [ ] Exercises (Optional)
+      - [ ] Alternate Encodings
+      - [ ] HTTP/1.1
+      - [ ] File URLs
+      - [ ] data
+      - [ ] Body tag
+      - [ ] Entities
+      - [ ] view-source
+      - [ ] Compression
+      - [ ] Redirects
+      - [ ] Caching
   - [ ] Drawing to the Screen
   - [ ] Formatting Text
 - [ ] Part 2: Viewing Documents
@@ -29,4 +46,3 @@ Based on [the browser book](https://browser.engineering/)
 
 - Part 1
   - Couldn't get [SSL](https://browser.engineering/http.html#encrypted-connections) to work, due to linker errors
-  - Missing [Exercises](https://browser.engineering/http.html#exercises)
