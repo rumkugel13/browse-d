@@ -6,24 +6,36 @@ import std.string;
 import std.typecons : tuple, Tuple;
 import std.array : join;
 import std.stdio;
+import std.conv: to;
 
 class URL
 {
     public string scheme, host, path;
+    public ushort port;
 
     this(string url)
     {
         auto split = url.split("://");
         scheme = split[0];
         assert(scheme == "http", "Unknown scheme: " ~ scheme);
+        if (scheme == "http")
+            port = 80;
 
         url = split[1];
         if (!canFind(url, "/"))
             url ~= "/";
 
         split = url.split("/");
+
         host = split[0];
         path = "/" ~ split[1];
+
+        if (host.canFind(":"))
+        {
+            split = host.split(":");
+            host = split[0];
+            port = split[1].to!ushort;
+        }
     }
 
     Tuple!(string[string], string) request()
@@ -31,7 +43,7 @@ class URL
         import std.socket;
 
         auto s = new Socket(AddressFamily.INET, SocketType.STREAM, ProtocolType.TCP);
-        auto address = new InternetAddress(host, 80);
+        auto address = new InternetAddress(host, port);
         s.connect(address);
 
         import std.utf;
@@ -101,4 +113,14 @@ unittest
     assert(url.scheme == "http");
     assert(url.host == "example.org");
     assert(url.path == "/");
+    assert(url.port == 80);
+}
+
+unittest
+{
+    URL url = new URL("http://example.org:8000/index.html");
+    assert(url.scheme == "http");
+    assert(url.host == "example.org");
+    assert(url.path == "/index.html");
+    assert(url.port == 8000);
 }
