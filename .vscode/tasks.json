@@ -4,7 +4,7 @@
 		{
 			"type": "dub",
 			"run": false,
-			"cwd": "c:/Users/Manuel/OneDrive/Development/browserbook",
+			"cwd": "c:/Users/Manuel/OneDrive/Development/browse-d",
 			"compiler": "$current",
 			"archType": "$current",
 			"buildType": "$current",
@@ -13,7 +13,7 @@
 				"$dmd"
 			],
 			"group": "build",
-			"label": "dub: Build browserbook",
+			"label": "dub: Build browse-d",
 			"detail": "dub build --compiler=dmd.EXE -a=x86_64 -b=debug -c=application"
 		}
 	]
