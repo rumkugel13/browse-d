@@ -6,7 +6,7 @@ import std.string;
 import std.typecons : tuple, Tuple;
 import std.array : join;
 import std.stdio;
-import std.conv: to;
+import std.conv : to;
 
 class URL
 {
@@ -42,19 +42,20 @@ class URL
     {
         import std.socket;
 
-        auto s = new Socket(AddressFamily.INET, SocketType.STREAM, ProtocolType.TCP);
+        auto tcpSocket = new TcpSocket(AddressFamily.INET);
+        scope(exit) tcpSocket.close();
         auto address = new InternetAddress(host, port);
-        s.connect(address);
+        tcpSocket.connect(address);
 
         import std.utf;
 
-        s.send(("GET " ~ path ~ " HTTP/1.0\r\n" ~ "Host: " ~ host ~ " \r\n\r\n").toUTF8);
+        tcpSocket.send(("GET " ~ path ~ " HTTP/1.0\r\n" ~ "Host: " ~ host ~ " \r\n\r\n").toUTF8);
 
         char[1024] buf;
         string receivedData;
         long bytesRead;
 
-        while ((bytesRead = s.receive(buf)) > 0)
+        while ((bytesRead = tcpSocket.receive(buf)) > 0)
         {
             receivedData ~= buf[0 .. bytesRead];
         }
@@ -63,12 +64,12 @@ class URL
 
         auto statusLine = lines[0];
         auto splitStatus = statusLine.split();
-        auto ver = splitStatus[0];
+        auto httpVersion = splitStatus[0];
         auto status = splitStatus[1];
         auto explanation = splitStatus[2];
         assert(status == "200", status ~ ":" ~ explanation);
 
-        string[string] headers;
+        string[string] responseHeaders;
         ulong begin = 0;
         foreach (i, line; lines[1 .. $])
         {
@@ -79,22 +80,21 @@ class URL
             }
 
             auto splitLine = line.split(":");
-            headers[splitLine[0].toLower()] = splitLine[1].strip();
+            responseHeaders[splitLine[0].toLower()] = splitLine[1].strip();
         }
 
-        assert("transfer-encoding" !in headers);
-        assert("content-encoding" !in headers);
+        assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
+        assert("content-encoding" !in responseHeaders, "Unsupported header: " ~ "content-encoding");
 
-        auto bod = lines[begin .. $].join;
-        s.close();
+        auto responseBody = lines[begin .. $].join;
 
-        return tuple(headers, bod);
+        return tuple(responseHeaders, responseBody);
     }
 
-    void show(string bod)
+    void show(string responseBody)
     {
         bool inAngle = false;
-        foreach (character; bod)
+        foreach (character; responseBody)
         {
             if (character == '<')
                 inAngle = true;
