@@ -1,4 +1,7 @@
 {
 	"name": "browse-d",
-	"buildOptions-windows": ["debugInfoC"]
+	"buildOptions-windows": ["debugInfoC"],
+	"dependencies": {
+		"dlangui": "~>0.10.4"
+	}
 }

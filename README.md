@@ -23,7 +23,17 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Compression
       - [ ] Redirects
       - [ ] Caching
-  - [ ] Drawing to the Screen
+  - [x] Drawing to the Screen
+    - [x] Window Creating
+    - [x] Text Layout and Drawing
+    - [x] Listening to Key Events
+    - [x] Scrolling the content in the window
+    - [ ] Exercises (Optional)
+      - [ ] Line breaks
+      - [ ] Mouse wheel
+      - [ ] Emoji
+      - [ ] Resizing
+      - [ ] Zoom
   - [ ] Formatting Text
 - [ ] Part 2: Viewing Documents
   - [ ] Constructing a Document Tree

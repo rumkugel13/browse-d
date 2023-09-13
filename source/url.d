@@ -91,9 +91,10 @@ class URL
         return tuple(responseHeaders, responseBody);
     }
 
-    void show(string responseBody)
+    string lex(string responseBody)
     {
         bool inAngle = false;
+        string text = "";
         foreach (character; responseBody)
         {
             if (character == '<')
@@ -101,15 +102,15 @@ class URL
             else if (character == '>')
                 inAngle = false;
             else if (!inAngle)
-                write(character);
+                text ~= character;  // todo: replace with appender
         }
-        writeln();
+        return text;
     }
 
     void load()
     {
         auto result = request();
-        show(result[1]);
+        // show(result[1]);
     }
 }
 
