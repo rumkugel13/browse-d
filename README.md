@@ -29,8 +29,8 @@ Based on [the browser book](https://browser.engineering/)
     - [x] Listening to Key Events
     - [x] Scrolling the content in the window
     - [ ] Exercises (Optional)
-      - [ ] Line breaks
-      - [ ] Mouse wheel
+      - [x] Line breaks
+      - [x] Mouse wheel
       - [ ] Emoji
       - [ ] Resizing
       - [ ] Zoom

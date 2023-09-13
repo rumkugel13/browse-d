@@ -37,6 +37,7 @@ class Browser
     {
         canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) => doDraw(canvas, buf, rc);
         canvas.keyEvent = delegate(Widget source, KeyEvent event) => onKey(source, event);
+        canvas.mouseEvent = delegate(Widget source, MouseEvent event) => onMouse(source, event);
 
         auto text = url.lex(url.request()[1]);
 
@@ -48,17 +49,23 @@ class Browser
         auto cursor_x = HSTEP, cursor_y = VSTEP;
         CharPos[] list;
 
-        foreach (_; 1 .. 10) //test for long website and scrolling
-            foreach (c; text)
+        foreach (c; text)
+        {
+            if (c == '\n')
             {
-                list ~= CharPos(cursor_x, cursor_y, c);
-                cursor_x += HSTEP;
-                if (cursor_x >= window.width())
-                {
-                    cursor_y += VSTEP;
-                    cursor_x = HSTEP;
-                }
+                cursor_y += VSTEP * 3 / 2;
+                cursor_x = HSTEP;
+                continue;
             }
+
+            list ~= CharPos(cursor_x, cursor_y, c);
+            cursor_x += HSTEP;
+            if (cursor_x >= window.width())
+            {
+                cursor_y += VSTEP;
+                cursor_x = HSTEP;
+            }
+        }
 
         return list;
     }
@@ -71,8 +78,10 @@ class Browser
 
         foreach (charPos; displayList)
         {
-            if (charPos.y > scroll + window.height()) continue;
-            if (charPos.y + VSTEP < scroll) continue;
+            if (charPos.y > scroll + window.height())
+                continue;
+            if (charPos.y + VSTEP < scroll)
+                continue;
             canvas.font.drawText(buf, x + charPos.x, y + charPos.y - scroll, ""d ~ charPos.c, 0x0A0A0A);
         }
         // buf.fillRect(Rect(x + 20, y + 20, x + 150, y + 200), 0x80FF80);
@@ -84,21 +93,41 @@ class Browser
 
     bool onKey(Widget source, KeyEvent event)
     {
-        if (event.action == KeyAction.KeyDown) 
-        switch (event.keyCode)
+        if (event.action == KeyAction.KeyDown)
         {
-        case KeyCode.DOWN:
+            switch (event.keyCode)
+            {
+            case KeyCode.DOWN:
+                {
+                    scrollDown();
+                    return true;
+                }
+            case KeyCode.UP:
+                {
+                    scrollUp();
+                    return true;
+                }
+            default:
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    bool onMouse(Widget source, MouseEvent event)
+    {
+        if (event.action == MouseAction.Wheel)
+        {
+            if (event.wheelDelta < 0)
             {
                 scrollDown();
-                return true;
             }
-        case KeyCode.UP:
+            else
             {
                 scrollUp();
-                return true;
             }
-        default:
-            return false;
+            return true;
         }
 
         return false;
@@ -107,13 +136,13 @@ class Browser
     void scrollDown()
     {
         scroll += SCROLL_STEP;
-        canvas.invalidate();    // mark to redraw
+        canvas.invalidate(); // mark to redraw
     }
 
     void scrollUp()
     {
         scroll -= SCROLL_STEP;
         scroll = scroll < 0 ? 0 : scroll; //stop scrolling up
-        canvas.invalidate();    // mark to redraw
+        canvas.invalidate(); // mark to redraw
     }
 }

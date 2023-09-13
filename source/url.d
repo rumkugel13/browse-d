@@ -86,7 +86,7 @@ class URL
         assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
         assert("content-encoding" !in responseHeaders, "Unsupported header: " ~ "content-encoding");
 
-        auto responseBody = lines[begin .. $].join;
+        auto responseBody = lines[begin .. $].join("\n");
 
         return tuple(responseHeaders, responseBody);
     }
