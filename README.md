@@ -1,10 +1,10 @@
-# Web Browser in D
+# Drowsey: A Web Browser in D
 
 Based on [the browser book](https://browser.engineering/)
 
 ## Progress
 
-- [ ] Part 1: Drawing Graphics
+- [x] Part 1: Drawing Graphics
   - [X] Downloading Web Pages
     - [X] URL Parsing
     - [X] Connecting to Host
@@ -34,7 +34,17 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Emoji
       - [ ] Resizing
       - [ ] Zoom
-  - [ ] Formatting Text
+  - [x] Formatting Text
+    - [x] Text Layout word by word
+    - [x] Split lines at words
+    - [x] Text can be bold and italic
+    - [x] Text in different sizes can be mixed
+    - [ ] Exercises (Optional)
+      - [ ] Centered Text
+      - [ ] Superscripts
+      - [ ] Soft hyphens
+      - [ ] Small caps
+      - [ ] Preformatted text
 - [ ] Part 2: Viewing Documents
   - [ ] Constructing a Document Tree
   - [ ] Laying Out Pages
