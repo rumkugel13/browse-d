@@ -6,6 +6,7 @@ import std.range : split;
 import std.conv : to;
 import std.sumtype : match;
 import layout;
+import htmlparser;
 
 const auto WIDTH = 800, HEIGHT = 600;
 const auto HSTEP = 13, VSTEP = 18;
@@ -47,9 +48,11 @@ class Browser
         canvas.keyEvent = delegate(Widget source, KeyEvent event) => onKey(source, event);
         canvas.mouseEvent = delegate(Widget source, MouseEvent event) => onMouse(source, event);
 
-        auto text = url.lex(url.request().htmlBody);
+        auto parser = new HTMLParser(url.request().htmlBody);
+        auto tree = parser.parse();
+        parser.printTree(tree, 0);
 
-        displayList = new Layout(text).displayList;
+        displayList = new Layout(tree).displayList;
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)

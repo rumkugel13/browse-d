@@ -4,6 +4,7 @@ import browser, url;
 import dlangui;
 import std.sumtype:match;
 import std.string;
+import node, text, element;
 
 struct WordPos
 {
@@ -21,41 +22,57 @@ class Layout
     TextPos[] displayList;
     WordPos[] line;
 
-    this(url.Token[] tokens)
+    this(Node tree)
     {
-        foreach (token; tokens)
-        {
-            this.token(token);
-        }
+        recurse(tree);
         flush(); // @suppress(dscanner.vcall_ctor)
     }
 
-    void token(url.Token token)
+    void recurse(Node tree)
     {
-        token.match!(
-            (ref Text t) {
-            foreach (word; t.text.split())
+        if (typeid(tree) == typeid(text.Text))
+        {
+            foreach (word; (cast(text.Text)tree).text.split())
             {
                 this.word(word);
             }
-        },
-            (ref Tag t) {
-                switch (t.tag)
-                {
-                    case "i": italic = true; break;
-                    case "/i": italic = false; break;
-                    case "b": weight = FontWeight.Bold; break;
-                    case "/b": weight = FontWeight.Normal; break;
-                    case "small": size -= 2; break;
-                    case "/small": size += 2; break;
-                    case "big": size += 4; break;
-                    case "/big": size -= 4; break;
-                    case "br": flush(); break;
-                    case "/p": { flush(); cursor_y += VSTEP; } break;
-                    default: break;
-                }
+        }
+        else 
+        {
+            auto tag = cast(Element)tree;
+            openTag(tag.tag);
+            foreach (child; tag.children)
+            {
+                recurse(child);
             }
-        );
+            closeTag(tag.tag);
+        }
+    }
+
+    void openTag(string tag)
+    {
+        switch (tag)
+        {
+            case "i": italic = true; break;
+            case "b": weight = FontWeight.Bold; break;
+            case "small": size -= 2; break;
+            case "big": size += 4; break;
+            case "br": flush(); break; // bug: somehow causes text to overlap?
+            default: break;
+        }
+    }
+
+    void closeTag(string tag)
+    {
+        switch (tag)
+        {
+            case "i": italic = false; break;
+            case "b": weight = FontWeight.Normal; break;
+            case "small": size += 2; break;
+            case "big": size -= 4; break;
+            case "p": { flush(); cursor_y += VSTEP; } break;
+            default: break;
+        }
     }
 
     void word(string word)
@@ -99,6 +116,6 @@ class Layout
         line.length = 0;
 
         auto maxDescent = descents.maxElement;
-        cursor_y = baseline + maxDescent * 5 / 4;
+        cursor_y += baseline + maxDescent * 5 / 4;
     }
 }

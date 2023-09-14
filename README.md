@@ -46,7 +46,17 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Small caps
       - [ ] Preformatted text
 - [ ] Part 2: Viewing Documents
-  - [ ] Constructing a Document Tree
+  - [x] Constructing a Document Tree
+    - [x] HTML parser
+    - [x] Handling attributes
+    - [x] Some fixes for malformed HTML
+    - [x] Recursive layout algorithm for tree
+    - [ ] Exercises (Optional)
+      - [ ] Comments
+      - [ ] Paragraphs
+      - [ ] Scripts
+      - [ ] Quoted attributes
+      - [ ] Syntax highlighting
   - [ ] Laying Out Pages
   - [ ] Applying Author Styles
   - [ ] Handling Buttons and Links

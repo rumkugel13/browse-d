@@ -110,34 +110,6 @@ class URL
 
         return HttpResponse(responseHeaders, responseBody);
     }
-
-    Token[] lex(string responseBody)
-    {
-        Token[] result;
-        bool inAngle = false;
-        string text = "";
-        foreach (character; responseBody)
-        {
-            if (character == '<')
-            {
-                inAngle = true;
-                if (!text.empty) result ~= Token(Text(text));
-                text = "";
-            }
-            else if (character == '>')
-            {
-                inAngle = false;
-                result ~= Token(Tag(text));
-                text = "";
-            }
-            else
-            {
-                text ~= character; // todo: replace with appender
-            }
-        }
-        if (!inAngle && !text.empty) result ~= Token(Text(text));
-        return result;
-    }
 }
 
 unittest
