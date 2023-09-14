@@ -1,17 +1,36 @@
 module url;
 
-import std.range : split;
+import std.range : split, empty;
 import std.algorithm : canFind, startsWith;
 import std.string;
 import std.typecons : tuple, Tuple;
 import std.array : join;
 import std.stdio;
 import std.conv : to;
+import std.sumtype;
+
+struct Text
+{
+    string text;
+}
+
+struct Tag
+{
+    string tag;
+}
+
+alias Token = SumType!(Text, Tag);
 
 class URL
 {
     public string scheme, host, path;
     public ushort port;
+
+    struct HttpResponse
+    {
+        string[string] headers;
+        string htmlBody;
+    }
 
     this(string url)
     {
@@ -38,12 +57,13 @@ class URL
         }
     }
 
-    Tuple!(string[string], string) request()
+    HttpResponse request()
     {
         import std.socket;
 
         auto tcpSocket = new TcpSocket(AddressFamily.INET);
-        scope(exit) tcpSocket.close();
+        scope (exit)
+            tcpSocket.close();
         auto address = new InternetAddress(host, port);
         tcpSocket.connect(address);
 
@@ -88,29 +108,35 @@ class URL
 
         auto responseBody = lines[begin .. $].join("\n");
 
-        return tuple(responseHeaders, responseBody);
+        return HttpResponse(responseHeaders, responseBody);
     }
 
-    string lex(string responseBody)
+    Token[] lex(string responseBody)
     {
+        Token[] result;
         bool inAngle = false;
         string text = "";
         foreach (character; responseBody)
         {
             if (character == '<')
+            {
                 inAngle = true;
+                if (!text.empty) result ~= Token(Text(text));
+                text = "";
+            }
             else if (character == '>')
+            {
                 inAngle = false;
-            else if (!inAngle)
-                text ~= character;  // todo: replace with appender
+                result ~= Token(Tag(text));
+                text = "";
+            }
+            else
+            {
+                text ~= character; // todo: replace with appender
+            }
         }
-        return text;
-    }
-
-    void load()
-    {
-        auto result = request();
-        // show(result[1]);
+        if (!inAngle && !text.empty) result ~= Token(Text(text));
+        return result;
     }
 }
 

@@ -2,23 +2,29 @@ module browser;
 
 import dlangui;
 import url;
+import std.range : split;
+import std.conv : to;
+import std.sumtype : match;
+import layout;
 
-auto WIDTH = 800, HEIGHT = 600;
-auto HSTEP = 13, VSTEP = 18;
+const auto WIDTH = 800, HEIGHT = 600;
+const auto HSTEP = 13, VSTEP = 18;
 auto SCROLL_STEP = 100;
+
+struct TextPos
+{
+    int x, y;
+    dstring s;
+    Font f;
+}
 
 class Browser
 {
     Window window;
     CanvasWidget canvas;
-    CharPos[] displayList;
+    Font font;
+    TextPos[] displayList;
     int scroll = 0;
-
-    struct CharPos
-    {
-        int x, y;
-        char c;
-    }
 
     this()
     {
@@ -31,6 +37,8 @@ class Browser
 
         // show window
         window.show();
+
+        font = FontManager.instance.getFont(16, FontWeight.Bold, true, FontFamily.Unspecified, "Times");
     }
 
     void load(URL url)
@@ -39,35 +47,9 @@ class Browser
         canvas.keyEvent = delegate(Widget source, KeyEvent event) => onKey(source, event);
         canvas.mouseEvent = delegate(Widget source, MouseEvent event) => onMouse(source, event);
 
-        auto text = url.lex(url.request()[1]);
+        auto text = url.lex(url.request().htmlBody);
 
-        displayList = layout(text);
-    }
-
-    CharPos[] layout(string text)
-    {
-        auto cursor_x = HSTEP, cursor_y = VSTEP;
-        CharPos[] list;
-
-        foreach (c; text)
-        {
-            if (c == '\n')
-            {
-                cursor_y += VSTEP * 3 / 2;
-                cursor_x = HSTEP;
-                continue;
-            }
-
-            list ~= CharPos(cursor_x, cursor_y, c);
-            cursor_x += HSTEP;
-            if (cursor_x >= window.width())
-            {
-                cursor_y += VSTEP;
-                cursor_x = HSTEP;
-            }
-        }
-
-        return list;
+        displayList = new Layout(text).displayList;
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
@@ -82,8 +64,9 @@ class Browser
                 continue;
             if (charPos.y + VSTEP < scroll)
                 continue;
-            canvas.font.drawText(buf, x + charPos.x, y + charPos.y - scroll, ""d ~ charPos.c, 0x0A0A0A);
+            charPos.f.drawText(buf, x + charPos.x, y + charPos.y - scroll, charPos.s, 0x0A0A0A);
         }
+
         // buf.fillRect(Rect(x + 20, y + 20, x + 150, y + 200), 0x80FF80);
         // buf.fillRect(Rect(x + 90, y + 80, x + 250, y + 250), 0x80FF80FF);
         // canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
