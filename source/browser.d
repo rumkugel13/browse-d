@@ -50,7 +50,13 @@ class Browser
         document = new DocumentLayout(tree);
         document.layout();
         document.printTree();
+        
         document.paint(this.displayList);
+
+        foreach(command; this.displayList)
+        {
+            writeln(command);
+        }
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
@@ -59,7 +65,6 @@ class Browser
 
         foreach (command; displayList)
         {
-            writeln(command);
             if (command.top > scroll + window.height())
                 continue;
             if (command.bottom < scroll)
