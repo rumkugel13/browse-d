@@ -109,13 +109,14 @@ class HTMLParser
         string[string] attributes;
         foreach (attrpair; parts[1 .. $])
         {
-            if (attrpair.canFind("="))
+            import std.algorithm : findSplit;
+            auto keyAndValue = attrpair.findSplit("=");
+            if (keyAndValue.length > 1)
             {
-                auto pair = attrpair.split("=");
-                auto value = pair[1];
+                auto value = keyAndValue[2];
                 if (value.length > 2 && value.canFind("'", "\""))
                     value = value[1 .. $ - 1];
-                attributes[pair[0].toLower()] = value;
+                attributes[keyAndValue[0].toLower()] = value;
             }
             else
             {
