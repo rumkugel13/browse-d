@@ -65,7 +65,7 @@ class BlockLayout
     void layout()
     {
         this.x = parent.x;
-        if (previous !is null)
+        if (previous !is null && typeid(previous) != typeid(NoLayout))
             this.y = previous.y + previous.height;
         else
             this.y = parent.y;
@@ -75,8 +75,6 @@ class BlockLayout
         if (mode == LayoutMode.Block)
         {
             layoutIntermediate();
-            import std.algorithm : map, sum;
-            this.height = children.map!((child) => child.height).sum();
         }
         else
         {
@@ -88,11 +86,19 @@ class BlockLayout
             line = WordPos[].init;
             recurse(tree);
             flush();
-            this.height = cursor_y;
         }
         foreach (child; children)
         {
             child.layout();
+        }
+        if (mode == LayoutMode.Block)
+        {
+            import std.algorithm : map, sum;
+            this.height = children.map!((child) => child.height).sum();     
+        }
+        else 
+        {
+            this.height = cursor_y;
         }
     }
 
