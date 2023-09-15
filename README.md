@@ -8,7 +8,7 @@ Based on [the browser book](https://browser.engineering/)
   - [X] Downloading Web Pages
     - [X] URL Parsing
     - [X] Connecting to Host
-      - [ ] Encryption
+      - [x] Encryption
     - [X] Send HTTP Request
     - [X] Receive and Split HTTP Response
     - [X] Print Text
@@ -84,8 +84,3 @@ Based on [the browser book](https://browser.engineering/)
   - [ ] Making Content Accessible
   - [ ] Supporting Embedded Content
   - [ ] Reusing Previous Computation
-
-## Notes
-
-- Part 1
-  - Couldn't get [SSL](https://browser.engineering/http.html#encrypted-connections) to work, due to linker errors

@@ -7,7 +7,8 @@ mixin APP_ENTRY_POINT;
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) // @suppress(dscanner.style.phobos_naming_convention)
 {
-    string test = "http://example.org";
+    string test = "https://example.org";
+    test = "https://browser.engineering/styles.html";
     // test = "http://httpforever.com/";
     // test = "http://localhost:8000/index.html";
     if (args.length > 1)
