@@ -4,7 +4,7 @@ import browser, url;
 import dlangui;
 import std.sumtype:match;
 import std.string;
-import node, text, element;
+import node;
 
 struct WordPos
 {
@@ -22,8 +22,17 @@ class Layout
     Node tree;
     TextPos[] displayList;
     WordPos[] line;
+    Layout parent, previous;
+    Layout[] children;
 
-    this(Node tree)
+    this(Node tree, Layout parent, Layout previous)
+    {
+        this.tree = tree;
+        this.parent = parent;
+        this.previous = previous;
+    }
+
+    protected this(Node tree)
     {
         this.tree = tree;
     }
@@ -36,9 +45,9 @@ class Layout
 
     void recurse(Node tree)
     {
-        if (typeid(tree) == typeid(text.Text))
+        if (typeid(tree) == typeid(node.Text))
         {
-            foreach (word; (cast(text.Text)tree).text.split())
+            foreach (word; (cast(node.Text)tree).text.split())
             {
                 this.word(word);
             }
@@ -123,5 +132,33 @@ class Layout
 
         auto maxDescent = descents.maxElement;
         cursor_y += baseline + maxDescent * 5 / 4;
+    }
+}
+
+class DocumentLayout : Layout
+{
+    this(Node tree)
+    {
+        super(tree);
+    }
+
+    override void layout()
+    {
+        auto child = new Layout(tree, this, new NoLayout());
+        children ~= child;
+        child.layout();
+        displayList = child.displayList;
+    }
+}
+
+class NoLayout : Layout
+{
+    this()
+    {
+        super(new None());
+    }
+
+    override void layout()
+    {
     }
 }

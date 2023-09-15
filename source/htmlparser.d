@@ -1,6 +1,6 @@
 module htmlparser;
 
-import node, text, element;
+import node;
 import std.string : empty, startsWith, split, toLower;
 import std.algorithm : canFind;
 

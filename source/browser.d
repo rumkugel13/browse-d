@@ -50,7 +50,7 @@ class Browser
         auto tree = parser.parse();
         parser.printTree(tree, 0);
 
-        document = new Layout(tree);
+        document = new DocumentLayout(tree);
         document.layout();
         displayList = document.displayList;
     }
