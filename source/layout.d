@@ -13,7 +13,7 @@ struct WordPos
     Font f;
 }
 
-class Layout
+class BlockLayout
 {
     int cursor_x = HSTEP, cursor_y = VSTEP;
     auto weight = FontWeight.Normal;
@@ -22,10 +22,10 @@ class Layout
     Node tree;
     TextPos[] displayList;
     WordPos[] line;
-    Layout parent, previous;
-    Layout[] children;
+    BlockLayout parent, previous;
+    BlockLayout[] children;
 
-    this(Node tree, Layout parent, Layout previous)
+    this(Node tree, BlockLayout parent, BlockLayout previous)
     {
         this.tree = tree;
         this.parent = parent;
@@ -135,7 +135,7 @@ class Layout
     }
 }
 
-class DocumentLayout : Layout
+class DocumentLayout : BlockLayout
 {
     this(Node tree)
     {
@@ -144,14 +144,14 @@ class DocumentLayout : Layout
 
     override void layout()
     {
-        auto child = new Layout(tree, this, new NoLayout());
+        auto child = new BlockLayout(tree, this, new NoLayout());
         children ~= child;
         child.layout();
         displayList = child.displayList;
     }
 }
 
-class NoLayout : Layout
+class NoLayout : BlockLayout
 {
     this()
     {

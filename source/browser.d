@@ -23,7 +23,7 @@ class Browser
 {
     Window window;
     CanvasWidget canvas;
-    Layout document;
+    BlockLayout document;
     TextPos[] displayList;
     int scroll = 0;
 
