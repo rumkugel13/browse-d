@@ -7,24 +7,20 @@ import std.conv : to;
 import std.sumtype : match;
 import layout;
 import htmlparser;
+import displaycommands;
 
 const auto WIDTH = 800, HEIGHT = 600;
 const auto HSTEP = 13, VSTEP = 18;
 auto SCROLL_STEP = 100;
 
-struct TextPos
-{
-    int x, y;
-    dstring s;
-    Font f;
-}
+alias DisplayList = DisplayCommand[];
 
 class Browser
 {
     Window window;
     CanvasWidget canvas;
     BlockLayout document;
-    TextPos[] displayList;
+    DisplayList displayList;
     int scroll = 0;
 
     this()
@@ -52,29 +48,23 @@ class Browser
 
         document = new DocumentLayout(tree);
         document.layout();
-        displayList = document.displayList;
+        document.paint(this.displayList);
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
     {
-        buf.fill(0xFFFFFF); //background
+        buf.fill(Color.white); //background
         int x = rc.left;
         int y = rc.top;
 
-        foreach (charPos; displayList)
+        foreach (command; displayList)
         {
-            if (charPos.y > scroll + window.height())
+            if (command.top > scroll + window.height())
                 continue;
-            if (charPos.y + VSTEP < scroll)
+            if (command.bottom < scroll)
                 continue;
-            charPos.f.drawText(buf, x + charPos.x, y + charPos.y - scroll, charPos.s, 0x0A0A0A);
+            command.execute(scroll, buf);
         }
-
-        // buf.fillRect(Rect(x + 20, y + 20, x + 150, y + 200), 0x80FF80);
-        // buf.fillRect(Rect(x + 90, y + 80, x + 250, y + 250), 0x80FF80FF);
-        // canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
-        // buf.drawFrame(Rect(x + 400, y + 30, x + 550, y + 150), 0x204060, Rect(2, 3, 4, 5), 0x80704020);
-        // canvas.font.drawText(buf, x + 400, y + 5, "drawFrame()"d, 0x208020);
     }
 
     bool onKey(Widget source, KeyEvent event)
@@ -121,14 +111,16 @@ class Browser
 
     void scrollDown()
     {
-        scroll += SCROLL_STEP;
+        import std.algorithm : max, min;
+        auto maxY = max(document.height - HEIGHT, 0);
+        scroll = min(scroll + SCROLL_STEP, maxY);
         canvas.invalidate(); // mark to redraw
     }
 
     void scrollUp()
     {
-        scroll -= SCROLL_STEP;
-        scroll = scroll < 0 ? 0 : scroll; //stop scrolling up
+        import std.algorithm : max, min;
+        scroll = max(scroll - SCROLL_STEP, 0);
         canvas.invalidate(); // mark to redraw
     }
 }

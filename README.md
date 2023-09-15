@@ -57,7 +57,20 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Scripts
       - [ ] Quoted attributes
       - [ ] Syntax highlighting
-  - [ ] Laying Out Pages
+  - [x] Laying Out Pages
+    - [x] Tree based layout
+    - [x] Layoutmodes in nodes (block/inline)
+    - [x] Layout computes size and position
+    - [x] Displaylist contains commands
+    - [x] Source code snippets have background
+    - [ ] Exercises (Optional)
+      - [ ] Links bar
+      - [ ] Hidden head
+      - [ ] Bullets
+      - [ ] Scrollbar
+      - [ ] Table of Contents
+      - [ ] Anonymous block boxes
+      - [ ] Run-ins
   - [ ] Applying Author Styles
   - [ ] Handling Buttons and Links
 - [ ] Part 3: Running Applications

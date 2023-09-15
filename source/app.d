@@ -8,7 +8,7 @@ mixin APP_ENTRY_POINT;
 extern (C) int UIAppMain(string[] args) // @suppress(dscanner.style.phobos_naming_convention)
 {
     string test = "http://example.org";
-    test = "http://httpforever.com/";
+    // test = "http://httpforever.com/";
     // test = "http://localhost:8000/index.html";
     if (args.length > 1)
     {
