@@ -19,7 +19,7 @@ class Browser
 {
     Window window;
     CanvasWidget canvas;
-    BlockLayout document;
+    DocumentLayout document;
     DisplayList displayList;
     int scroll = 0;
 
@@ -48,14 +48,13 @@ class Browser
 
         document = new DocumentLayout(tree);
         document.layout();
+        document.printTree();
         document.paint(this.displayList);
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
     {
         buf.fill(Color.white); //background
-        int x = rc.left;
-        int y = rc.top;
 
         foreach (command; displayList)
         {

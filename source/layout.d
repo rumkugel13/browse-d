@@ -107,26 +107,21 @@ class BlockLayout
         }
     }
 
-    LayoutMode layoutMode()
+    LayoutMode layoutMode() inout
     {
         if (typeid(tree) == typeid(node.Text))
             return LayoutMode.Inline;
         else if (tree.children.length > 0)
         {
-            import std.algorithm : any, canFind;
+            import std.algorithm : canFind;
+            foreach (child; tree.children)
+            {
+                auto tag = cast(Element) child;
+                if (tag !is null && BLOCK_ELEMENTS.canFind(tag.tag))
+                    return LayoutMode.Block;
+            }
 
-            if (tree.children.any!((Node child) {
-                    auto tag = cast(Element) child;
-                    if (tag !is null)
-                    {
-                        return BLOCK_ELEMENTS.canFind(tag.tag);
-                    }
-                    else
-                        return false;
-                }))
-                return LayoutMode.Block;
-            else 
-                return LayoutMode.Inline;
+            return LayoutMode.Inline;
         }
         else
             return LayoutMode.Block;
@@ -272,6 +267,12 @@ class BlockLayout
             child.paint(displayList);
         }
     }
+
+    override string toString() const
+    {
+        import std.format;
+        return format("BlockLayout[%s](x=%s, y=%s, w=%s, h=%s, node=%s)", layoutMode, x, y, width, height, tree);
+    }
 }
 
 class DocumentLayout : BlockLayout
@@ -297,6 +298,34 @@ class DocumentLayout : BlockLayout
     override void paint(ref DisplayList displayList)
     {
         children[0].paint(displayList);
+    }
+
+    override string toString() const
+    {
+        import std.format;
+        return format("DocumentLayout(x=%s, y=%s, w=%s, h=%s)", x, y, width, height);
+    }
+
+    void printTree()
+    {
+        import std.stdio : writeln;
+        writeln(this);
+        foreach (child; children)
+        {
+            printTree(child, 2);
+        }
+    }
+
+    void printTree(BlockLayout layout, int indent = 0)
+    {
+        import std.stdio : writeln;
+        import std.range : repeat;
+
+        writeln(' '.repeat(indent), layout);
+        foreach (child; layout.children)
+        {
+            printTree(child, indent + 2);
+        }
     }
 }
 

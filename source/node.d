@@ -4,6 +4,11 @@ abstract class Node
 {
     Node[] children;
     Node parent;
+    
+    override string toString() const pure @safe
+    {
+        return "";
+    }
 }
 
 class Text : Node
