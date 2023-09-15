@@ -5,6 +5,7 @@ import url;
 import std.range : split;
 import std.conv : to;
 import std.sumtype : match;
+import std.stdio : writeln;
 import layout;
 import htmlparser;
 import displaycommands;
@@ -58,6 +59,7 @@ class Browser
 
         foreach (command; displayList)
         {
+            writeln(command);
             if (command.top > scroll + window.height())
                 continue;
             if (command.bottom < scroll)

@@ -7,6 +7,7 @@ abstract class DisplayCommand
     int top, left, bottom, right;
 
     void execute(int scroll, DrawBuf buf);
+    override string toString() const { return ""; }
 }
 
 class DrawText : DisplayCommand
@@ -27,6 +28,12 @@ class DrawText : DisplayCommand
     {
         font.drawText(buf, left, top - scroll, text, Color.black);
     }
+
+    override string toString() const
+    {
+        import std.format;
+        return format("DrawText(t=%s, l=%s, b=%s, r=%s, text=%s)", top, left, bottom, right, text);
+    }
 }
 
 class DrawRect : DisplayCommand
@@ -44,6 +51,13 @@ class DrawRect : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        buf.fillRect(Rect(top, left, bottom, right), color);
+        // note: make sure order of args in Rect is correct
+        buf.fillRect(Rect(left, top, right, bottom), color);
+    }
+
+    override string toString() const
+    {
+        import std.format;
+        return format("DrawRect(t=%s, l=%s, b=%s, r=%s, c=%s)", top, left, bottom, right, color);
     }
 }
