@@ -52,13 +52,44 @@ class URL
 
     HttpResponse request()
     {
+        string receivedData;
         if (scheme == "https")
-            return requestHttps();
+            receivedData = requestHttps();
         else
-            return requestHttp();
+            receivedData = requestHttp();
+
+        if (receivedData.empty) return HttpResponse.init;
+
+        import std.algorithm : findSplit;
+        auto temp = receivedData.findSplit("\r\n");
+
+        auto statusLine = temp[0];
+        auto splitStatus = statusLine.split();
+        auto httpVersion = splitStatus[0];
+        auto status = splitStatus[1];
+        auto explanation = splitStatus[2];
+        assert(status == "200", status ~ ":" ~ explanation);
+
+        string[string] responseHeaders;
+
+        while (true)
+        {
+            temp = temp[2].findSplit("\r\n");
+            if (temp[2].startsWith("\r\n"))
+                break;
+            auto splitLine = temp[0].split(":");
+            responseHeaders[splitLine[0].toLower()] = splitLine[1].strip();
+        }
+
+        assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
+        assert("content-encoding" !in responseHeaders, "Unsupported header: " ~ "content-encoding");
+
+        auto responseBody = temp[2][2..$];
+
+        return HttpResponse(responseHeaders, responseBody);
     }
 
-    HttpResponse requestHttp()
+    string requestHttp()
     {
         auto tcpSocket = new TcpSocket(AddressFamily.INET);
         scope (exit)
@@ -77,38 +108,10 @@ class URL
             receivedData ~= buf[0 .. bytesRead];
         }
 
-        auto lines = receivedData.splitLines();
-
-        auto statusLine = lines[0];
-        auto splitStatus = statusLine.split();
-        auto httpVersion = splitStatus[0];
-        auto status = splitStatus[1];
-        auto explanation = splitStatus[2];
-        assert(status == "200", status ~ ":" ~ explanation);
-
-        string[string] responseHeaders;
-        ulong begin = 0;
-        foreach (i, line; lines[1 .. $])
-        {
-            if (line.length == 0)
-            {
-                begin = i + 1;
-                break;
-            }
-
-            auto splitLine = line.split(":");
-            responseHeaders[splitLine[0].toLower()] = splitLine[1].strip();
-        }
-
-        assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
-        assert("content-encoding" !in responseHeaders, "Unsupported header: " ~ "content-encoding");
-
-        auto responseBody = lines[begin .. $].join("\n");
-
-        return HttpResponse(responseHeaders, responseBody);
+        return receivedData;
     }
 
-    HttpResponse requestHttps()
+    string requestHttps()
     {
         auto tcpSocket = new TcpSocket(AddressFamily.INET);
         scope (exit)
@@ -145,7 +148,7 @@ class URL
             // import deimos.openssl.applink : app_stderr;
             // import core.stdc.stdio : stderr;
             // ERR_print_errors_fp(cast(shared(_iobuf)*)stderr);
-            return HttpResponse.init;
+            return string.init;
         }
         scope(exit)
         {
@@ -166,35 +169,7 @@ class URL
             receivedData ~= buf[0 .. bytesRead];
         }
 
-        auto lines = receivedData.splitLines();
-
-        auto statusLine = lines[0];
-        auto splitStatus = statusLine.split();
-        auto httpVersion = splitStatus[0];
-        auto status = splitStatus[1];
-        auto explanation = splitStatus[2];
-        assert(status == "200", status ~ ":" ~ explanation);
-
-        string[string] responseHeaders;
-        ulong begin = 0;
-        foreach (i, line; lines[1 .. $])
-        {
-            if (line.length == 0)
-            {
-                begin = i + 1;
-                break;
-            }
-
-            auto splitLine = line.split(":");
-            responseHeaders[splitLine[0].toLower()] = splitLine[1].strip();
-        }
-
-        assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
-        assert("content-encoding" !in responseHeaders, "Unsupported header: " ~ "content-encoding");
-
-        auto responseBody = lines[begin .. $].join("\n");
-
-        return HttpResponse(responseHeaders, responseBody);
+        return receivedData;
     }
 }
 
