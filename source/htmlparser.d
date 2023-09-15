@@ -64,8 +64,18 @@ class HTMLParser
     {
         import std.ascii : isWhite;
 
-        if (text[0].isWhite())
+        bool onlyWhite = true;
+        foreach (c; text)
+        {
+            if (!c.isWhite())
+            {
+                onlyWhite = false;
+                break;
+            }
+        }
+        if (onlyWhite)
             return;
+        
         implicitTags("");
         auto parent = unfinished[$ - 1];
         auto node = new Text(text, parent);
