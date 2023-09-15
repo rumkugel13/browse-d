@@ -9,7 +9,7 @@ extern (C) int UIAppMain(string[] args) // @suppress(dscanner.style.phobos_namin
 {
     string test = "http://example.org";
     test = "http://httpforever.com/";
-    test = "http://localhost:8000/index.html";
+    // test = "http://localhost:8000/index.html";
     if (args.length > 1)
     {
         test = args[1];

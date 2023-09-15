@@ -19,13 +19,19 @@ class Layout
     auto weight = FontWeight.Normal;
     auto italic = false;
     auto size = 16;
+    Node tree;
     TextPos[] displayList;
     WordPos[] line;
 
     this(Node tree)
     {
+        this.tree = tree;
+    }
+
+    void layout()
+    {
         recurse(tree);
-        flush(); // @suppress(dscanner.vcall_ctor)
+        flush();
     }
 
     void recurse(Node tree)

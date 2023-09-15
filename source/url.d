@@ -2,24 +2,12 @@ module url;
 
 import std.range : split, empty;
 import std.algorithm : canFind, startsWith;
-import std.string;
+import std.string : splitLines, toLower, strip;
 import std.typecons : tuple, Tuple;
 import std.array : join;
 import std.stdio;
 import std.conv : to;
 import std.sumtype;
-
-struct Text
-{
-    string text;
-}
-
-struct Tag
-{
-    string tag;
-}
-
-alias Token = SumType!(Text, Tag);
 
 class URL
 {

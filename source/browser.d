@@ -23,7 +23,7 @@ class Browser
 {
     Window window;
     CanvasWidget canvas;
-    Font font;
+    Layout document;
     TextPos[] displayList;
     int scroll = 0;
 
@@ -38,8 +38,6 @@ class Browser
 
         // show window
         window.show();
-
-        font = FontManager.instance.getFont(16, FontWeight.Bold, true, FontFamily.Unspecified, "Times");
     }
 
     void load(URL url)
@@ -52,7 +50,9 @@ class Browser
         auto tree = parser.parse();
         parser.printTree(tree, 0);
 
-        displayList = new Layout(tree).displayList;
+        document = new Layout(tree);
+        document.layout();
+        displayList = document.displayList;
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
