@@ -94,7 +94,7 @@ class BlockLayout
         }
         else 
         {
-            this.height = cursor_y;
+            this.height = cursor_y + VSTEP / 2; // add a bit of space after a block or paragraph
         }
     }
 
