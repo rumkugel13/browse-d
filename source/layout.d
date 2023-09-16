@@ -21,6 +21,7 @@ struct WordPos
     int x;
     dstring s;
     Font f;
+    string color;
 }
 
 struct TextPos
@@ -28,6 +29,7 @@ struct TextPos
     int x, y;
     dstring s;
     Font f;
+    string color;
 }
 
 enum LayoutMode
@@ -41,9 +43,6 @@ class BlockLayout
     int cursor_x = HSTEP, cursor_y = VSTEP;
     int x = 0, y = 0;
     int width = 0, height = 0;
-    auto weight = FontWeight.Normal;
-    auto italic = false;
-    auto size = 16;
     Node tree;
     TextPos[] displayList;
     WordPos[] line;
@@ -79,9 +78,6 @@ class BlockLayout
         else
         {
             cursor_x = cursor_y = 0;
-            weight = FontWeight.Normal;
-            italic = false;
-            size = 16;
 
             line = WordPos[].init;
             recurse(tree);
@@ -139,83 +135,44 @@ class BlockLayout
         {
             foreach (word; (cast(node.Text) tree).text.split())
             {
-                this.word(word);
+                this.word(tree, word);
             }
         }
         else
         {
             auto tag = cast(Element) tree;
-            openTag(tag.tag);
+            if (tag.tag == "br")
+            {
+                flush();
+            }
+
             foreach (child; tag.children)
             {
                 recurse(child);
             }
-            closeTag(tag.tag);
         }
     }
 
-    void openTag(string tag)
+    void word(Node node, string word)
     {
-        switch (tag)
-        {
-        case "i":
-            italic = true;
-            break;
-        case "b":
-            weight = FontWeight.Bold;
-            break;
-        case "small":
-            size -= 2;
-            break;
-        case "big":
-            size += 4;
-            break;
-        case "br":
-            flush();
-            break;
-        default:
-            break;
-        }
-    }
-
-    void closeTag(string tag)
-    {
-        switch (tag)
-        {
-        case "i":
-            italic = false;
-            break;
-        case "b":
-            weight = FontWeight.Normal;
-            break;
-        case "small":
-            size += 2;
-            break;
-        case "big":
-            size -= 4;
-            break;
-        case "p":
-            {
-                flush();
-                cursor_y += VSTEP;
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    void word(string word)
-    {
-        auto font = FontManager.instance.getFont(size, weight, italic, FontFamily.SansSerif, "Arial");
+        auto color = "color" in node.style ? node.style["color"] : "black";
+        auto font = getFont(node);
         auto wordWidth = font.textSize(word.to!dstring).x;
         if (cursor_x + wordWidth > this.width)
         {
             flush();
         }
 
-        line ~= WordPos(cursor_x, word.to!dstring, font);
+        line ~= WordPos(cursor_x, word.to!dstring, font, color);
         cursor_x += wordWidth + font.textSize(" ").x;
+    }
+
+    Font getFont(Node node)
+    {
+        auto weight = "font-weight" in  node.style && node.style["font-weight"] == "bold" ? FontWeight.Bold : FontWeight.Normal;
+        auto style = "font-style" in node.style && node.style["font-style"] == "italic" ? FONT_STYLE_ITALIC.to!bool : FONT_STYLE_NORMAL.to!bool;
+        auto size = "font-size" in node.style ? (node.style["font-size"][0..$-2].to!float * 0.75f).to!int : 16;
+        return FontManager.instance.getFont(size, weight, style, FontFamily.SansSerif, "Arial");
     }
 
     void flush()
@@ -242,7 +199,7 @@ class BlockLayout
         {
             auto x = this.x + wordpos.x;
             auto y = this.y + totalBaseline - wordpos.f.baseline();
-            displayList ~= TextPos(x, y, wordpos.s, wordpos.f);
+            displayList ~= TextPos(x, y, wordpos.s, wordpos.f, wordpos.color);
         }
 
         cursor_x = 0;
@@ -256,26 +213,17 @@ class BlockLayout
     {
         if ("background-color" in tree.style)
         {
-            auto color = (tree.style["background-color"] == "lightblue") ? Color.light_blue : COLOR_TRANSPARENT;
+            string color = tree.style["background-color"];
             auto x2 = this.x + this.width;
             auto y2 = this.y + this.height;
             auto rect = new DrawRect(this.x, this.y, x2, y2, color);
             displayList ~= rect;
         }
 
-        // auto element = cast(Element)tree;
-        // if (element !is null && element.tag == "pre")
-        // {
-        //     auto x2 = this.x + this.width;
-        //     auto y2 = this.y + this.height;
-        //     auto rect = new DrawRect(this.x, this.y, x2, y2, Color.light_gray);
-        //     displayList ~= rect;
-        // }
-
         // if (layoutMode() == LayoutMode.Inline)
         foreach (textPos; this.displayList)
         {
-            displayList ~= new DrawText(textPos.x, textPos.y, textPos.s, textPos.f);
+            displayList ~= new DrawText(textPos.x, textPos.y, textPos.s, textPos.f, textPos.color);
         }
 
         foreach (child; children)

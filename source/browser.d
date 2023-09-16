@@ -9,6 +9,8 @@ import std.stdio : writeln;
 import layout;
 import htmlparser, cssparser;
 import displaycommands;
+import std.file : readText;
+import node;
 
 const auto WIDTH = 800, HEIGHT = 600;
 const auto HSTEP = 13, VSTEP = 18;
@@ -22,6 +24,7 @@ final class Browser
     CanvasWidget canvas;
     DocumentLayout document;
     DisplayList displayList;
+    Rule[] defaultStyleSheet;
     int scroll = 0;
 
     this()
@@ -38,6 +41,8 @@ final class Browser
 
         window.mainWidget = canvas;
 
+        defaultStyleSheet = new CSSParser(readText("browser.css")).parse();
+
         // show window
         window.show();
     }
@@ -51,7 +56,44 @@ final class Browser
         auto tree = parser.parse();
         parser.printTree(tree, 0);
 
-        cssparser.style(tree);
+        auto rules = defaultStyleSheet.dup;
+
+        string[] links;
+        Node[] list;
+        foreach(node; treeToList(tree, list))
+        {
+            auto element = cast(Element)node;
+            if (element !is null && element.tag == "link" && "href" in element.attributes 
+                && "rel" in element.attributes && element.attributes["rel"] == "stylesheet")
+            {
+                links ~= element.attributes["href"];
+            }
+        }
+
+        foreach (link; links)
+        {
+            HttpResponse response;
+            try
+            {
+                response = url.resolve(link).request();
+            }
+            catch (Exception _) 
+            {
+                continue;
+            }
+            rules ~= new CSSParser(response.htmlBody).parse();
+        }
+
+        import std.algorithm : sort;
+        import std.range : array;
+        
+        cssparser.style(tree, rules.sort.array);
+
+        // auto cssTest = "a {p :v} ";
+        // auto rules = new CSSParser(cssTest).parse();
+        // writeln(rules);
+        // if (rules.length > 0)
+        //     return;
 
         document = new DocumentLayout(tree);
         document.layout();

@@ -1,7 +1,7 @@
 module url;
 
 import std.range : split, empty;
-import std.algorithm : canFind, startsWith;
+import std.algorithm : canFind, startsWith, findSplit;
 import std.string : splitLines, toLower, strip;
 import std.typecons : tuple, Tuple;
 import std.array : join;
@@ -12,16 +12,16 @@ import std.utf;
 import std.socket;
 import deimos.openssl.ssl, deimos.openssl.err;
 
+struct HttpResponse
+{
+    string[string] headers;
+    string htmlBody;
+}
+
 class URL
 {
     public string scheme, host, path;
     public ushort port;
-
-    struct HttpResponse
-    {
-        string[string] headers;
-        string htmlBody;
-    }
 
     this(string url)
     {
@@ -37,10 +37,10 @@ class URL
         if (!canFind(url, "/"))
             url ~= "/";
 
-        split = url.split("/");
+        auto fsplit = url.findSplit("/");
 
-        host = split[0];
-        path = "/" ~ split[1];
+        host = fsplit[0];
+        path = "/" ~ fsplit[2];
 
         if (host.canFind(":"))
         {
@@ -170,6 +170,40 @@ class URL
         }
 
         return receivedData;
+    }
+
+    URL resolve(string url)
+    {
+        if (url.canFind("://")) return new URL(url);
+        if (!url.startsWith("/"))
+        {
+            import std.string : lastIndexOf, indexOf;
+            auto i = path.lastIndexOf("/"); // pythons rsplit workaround
+            if (i != -1)
+            {
+                auto dir = path[0..i];
+                while (url.startsWith("../"))
+                {
+                    url = url.findSplit("/")[2]; // pythons split(x, 1) workaround
+                    if (dir.canFind("/"))
+                    {
+                        auto k = dir.lastIndexOf("/");
+                        if (k != -1)
+                        {
+                            dir = dir[0..k];
+                        }
+                    }
+                }
+                url = dir ~ "/" ~ url;
+            }
+        }
+        return new URL(scheme ~ "://" ~ host ~ ":" ~ port.to!string ~ url);
+    }
+
+    override string toString() const
+    {
+        import std.string : format;
+        return format("URL(scheme=%s, host=%s, port=%s, path=%s)", scheme, host, port, path);
     }
 }
 

@@ -71,7 +71,23 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Table of Contents
       - [ ] Anonymous block boxes
       - [ ] Run-ins
-  - [ ] Applying Author Styles
+  - [x] Applying Author Styles
+    - [x] Add CSS parser
+    - [x] Add support for style attributes and linked CSS files
+    - [x] Implement cascading and inheritance
+    - [x] Refactor BlockLayout to move the font properties to CSS
+    - [x] Move most tag-specific reasoning to a browser style sheet
+    - [ ] Exercises (Optional)
+      - [ ] Fonts (font-family)
+      - [ ] Width/Height
+      - [ ] Class selectors
+      - [ ] Display
+      - [ ] Shorthand Properties
+      - [ ] Fast Descendant Selectors
+      - [ ] Selector Sequences
+      - [ ] Important
+      - [ ] Ancestor Selectors
+      - [ ] Inline Style Sheets
   - [ ] Handling Buttons and Links
 - [ ] Part 3: Running Applications
   - [ ] Sending Information to Servers

@@ -1,12 +1,27 @@
 module cssparser;
 
 import std.ascii : isWhite, isAlphaNum;
-import std.algorithm : canFind;
+import std.algorithm : canFind, endsWith;
 import std.string : toLower;
 import std.typecons : tuple, Tuple;
+import std.conv : to;
 import node;
+import selector;
 
 alias KeyValuePair = Tuple!(string, "key", string, "value");
+alias Body = string[string];
+// alias Rule = Tuple!(Selector, "selector", Body, "body");
+
+struct Rule
+{
+    Selector selector;
+    Body body;
+
+    int opCmp(ref const Rule r) const 
+    {  
+        return (selector.priority > r.selector.priority) - (selector.priority < r.selector.priority);
+    }
+}
 
 class CSSParser
 {
@@ -63,10 +78,10 @@ class CSSParser
         return KeyValuePair(prop.toLower, val);
     }
 
-    string[string] styleBody()
+    Body styleBody()
     {
-        string[string] pairs;
-        while (pos < text.length)
+        Body pairs;
+        while (pos < text.length && text[pos] != '}')
         {
             try
             {
@@ -76,9 +91,11 @@ class CSSParser
                 literal(';');
                 whitespace();
             }
-            catch (Exception _)
+            catch (Exception e)
             {
-                auto why = ignoreUntil([';']);
+                import std.stdio;
+                writeln(e);
+                auto why = ignoreUntil([';', '}']);
                 if (why == ';')
                 {
                     literal(';');
@@ -103,11 +120,89 @@ class CSSParser
 
         return '\0';
     }
+
+    Selector selector()
+    {
+        Selector result = new TagSelector(word().toLower);
+        whitespace();
+        while (pos < text.length && text[pos] != '{')
+        {
+            auto tag = word();
+            auto descendant = new TagSelector(tag.toLower);
+            result = new DescendantSelector(result, descendant);
+            whitespace();
+        }
+        return result;
+    }
+
+    Rule[] parse()
+    {
+        Rule[] rules;
+        while (pos < text.length)
+        {
+            try
+            {
+                whitespace();
+                auto selector = selector();
+                literal('{');
+                whitespace();
+                auto b = styleBody();
+                literal('}');
+                rules ~= Rule(selector, b);
+            }
+            catch (Exception e)
+            {
+                import std.stdio;
+                writeln(e);
+                auto why = ignoreUntil(['}']);
+                if (why == '}')
+                {
+                    literal('}');
+                    whitespace();
+                }
+                else
+                    break;
+            }
+        }
+        return rules;
+    }
 }
 
-void style(Node node)
+immutable string[string] INHERITED_PROPERTIES;
+shared static this() 
+{
+    INHERITED_PROPERTIES = [
+    "font-size": "16px",
+    "font-style": "normal",
+    "font-weight": "normal",
+    "color": "black",
+    ];
+}
+
+void style(Node node, Rule[] rules)
 {
     node.style.clear;
+
+    foreach (property, defaultValue; INHERITED_PROPERTIES)
+    {
+        if (node.parent && property in node.parent.style)
+        {
+            node.style[property] = node.parent.style[property];
+        }
+        else
+        {
+            node.style[property] = defaultValue;
+        }
+    }
+
+    foreach (rule; rules)
+    {
+        if (!rule.selector.matches(node)) continue;
+        foreach (prop, b; rule.body)
+        {
+            node.style[prop] = b;
+        }
+    }
 
     auto element = cast(Element)node;
     if (element !is null && "style" in element.attributes)
@@ -119,6 +214,26 @@ void style(Node node)
         }
     }
 
+    if (node.style["font-size"].endsWith("%"))
+    {
+        string parentFontSize;
+        if (node.parent && "font-size" in node.parent.style)
+        {
+            parentFontSize = node.parent.style["font-size"];
+        }
+        else {
+            parentFontSize = INHERITED_PROPERTIES["font-size"];
+        }
+        auto nodePct = node.style["font-size"][0..$-1].to!float / 100f;
+        auto parentPx = parentFontSize[0..$-2].to!float;
+        node.style["font-size"] = (nodePct * parentPx).to!string ~ "px";
+    }
+
     foreach (child; node.children)
-        style(child);
+        style(child, rules);
+}
+
+int cascadePriority(Rule rule)
+{
+    return rule.selector.priority;
 }

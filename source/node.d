@@ -52,3 +52,11 @@ class Element : Node
 class None : Node
 {
 }
+
+Node[] treeToList(Node tree, ref Node[] list)
+{
+    list ~= tree;
+    foreach(child; tree.children)
+        auto _ = treeToList(child, list);
+    return list;
+}
