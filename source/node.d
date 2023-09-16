@@ -4,7 +4,8 @@ abstract class Node
 {
     Node[] children;
     Node parent;
-    
+    string[string] style;
+
     override string toString() const pure @safe
     {
         return "";

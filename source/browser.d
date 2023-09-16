@@ -7,7 +7,7 @@ import std.conv : to;
 import std.sumtype : match;
 import std.stdio : writeln;
 import layout;
-import htmlparser;
+import htmlparser, cssparser;
 import displaycommands;
 
 const auto WIDTH = 800, HEIGHT = 600;
@@ -50,6 +50,8 @@ final class Browser
         // auto parser = new HTMLParser(test);
         auto tree = parser.parse();
         parser.printTree(tree, 0);
+
+        cssparser.style(tree);
 
         document = new DocumentLayout(tree);
         document.layout();

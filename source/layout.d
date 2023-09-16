@@ -254,14 +254,23 @@ class BlockLayout
 
     void paint(ref DisplayList displayList)
     {
-        auto element = cast(Element)tree;
-        if (element !is null && element.tag == "pre")
+        if ("background-color" in tree.style)
         {
+            auto color = (tree.style["background-color"] == "lightblue") ? Color.light_blue : COLOR_TRANSPARENT;
             auto x2 = this.x + this.width;
             auto y2 = this.y + this.height;
-            auto rect = new DrawRect(this.x, this.y, x2, y2, Color.light_gray);
+            auto rect = new DrawRect(this.x, this.y, x2, y2, color);
             displayList ~= rect;
         }
+
+        // auto element = cast(Element)tree;
+        // if (element !is null && element.tag == "pre")
+        // {
+        //     auto x2 = this.x + this.width;
+        //     auto y2 = this.y + this.height;
+        //     auto rect = new DrawRect(this.x, this.y, x2, y2, Color.light_gray);
+        //     displayList ~= rect;
+        // }
 
         // if (layoutMode() == LayoutMode.Inline)
         foreach (textPos; this.displayList)
