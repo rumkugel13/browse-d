@@ -18,7 +18,7 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] File URLs
       - [ ] data
       - [ ] Body tag
-      - [ ] Entities
+      - [X] Entities
       - [ ] view-source
       - [ ] Compression
       - [ ] Redirects

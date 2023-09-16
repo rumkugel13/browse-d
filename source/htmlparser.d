@@ -1,7 +1,7 @@
 module htmlparser;
 
 import node;
-import std.string : empty, startsWith, split, toLower;
+import std.string : empty, startsWith, split, toLower, replace;
 import std.algorithm : canFind;
 
 auto SELF_CLOSING_TAGS = [
@@ -78,8 +78,17 @@ class HTMLParser
         
         implicitTags("");
         auto parent = unfinished[$ - 1];
+        text = replaceEntities(text);
         auto node = new Text(text, parent);
         parent.children ~= node;
+    }
+
+    string replaceEntities(string text)
+    {
+        text = text.replace("&lt;", "<");
+        text = text.replace("&gt;", ">");
+        text = text.replace("&quot;", "\"");
+        return text;
     }
 
     void addTag(string tag)
