@@ -207,7 +207,7 @@ class BlockLayout
 
     void word(string word)
     {
-        auto font = FontManager.instance.getFont(size, weight, italic, FontFamily.Unspecified, "Times");
+        auto font = FontManager.instance.getFont(size, weight, italic, FontFamily.SansSerif, "Arial");
         auto wordWidth = font.textSize(word.to!dstring).x;
         if (cursor_x + wordWidth > this.width)
         {

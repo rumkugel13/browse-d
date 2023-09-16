@@ -14,6 +14,7 @@ class DrawText : DisplayCommand
 {
     dstring text;
     Font font;
+    string fontString;
 
     this(int x1, int y1, dstring text, Font font)
     {
@@ -22,6 +23,7 @@ class DrawText : DisplayCommand
         this.text = text;
         this.font = font;
         bottom = y1 + font.size() * 3 / 2;
+        fontString = getFontDetails();
     }
 
     override void execute(int scroll, DrawBuf buf)
@@ -32,7 +34,13 @@ class DrawText : DisplayCommand
     override string toString() const
     {
         import std.format;
-        return format("DrawText(t=%s, l=%s, b=%s, r=%s, text=%s)", top, left, bottom, right, text);
+        return format("DrawText(t=%s, l=%s, b=%s, r=%s, text=%s, font=%s)", top, left, bottom, right, text, fontString);
+    }
+
+    string getFontDetails()
+    {
+        import std.format;
+        return format("Font(family=%s, size=%s, weight=%s, slant=%s, face=%s)", font.family, font.size, font.weight, font.italic, font.face);
     }
 }
 

@@ -16,7 +16,7 @@ auto SCROLL_STEP = 100;
 
 alias DisplayList = DisplayCommand[];
 
-class Browser
+final class Browser
 {
     Window window;
     CanvasWidget canvas;
@@ -31,6 +31,11 @@ class Browser
 
         // create some widget to show in window
         canvas = new CanvasWidget();
+        
+        canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) => doDraw(canvas, buf, rc);
+        canvas.keyEvent = delegate(Widget source, KeyEvent event) => onKey(source, event);
+        canvas.mouseEvent = delegate(Widget source, MouseEvent event) => onMouse(source, event);
+
         window.mainWidget = canvas;
 
         // show window
@@ -39,10 +44,6 @@ class Browser
 
     void load(URL url)
     {
-        canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) => doDraw(canvas, buf, rc);
-        canvas.keyEvent = delegate(Widget source, KeyEvent event) => onKey(source, event);
-        canvas.mouseEvent = delegate(Widget source, MouseEvent event) => onMouse(source, event);
-
         auto parser = new HTMLParser(url.request().htmlBody);
         auto tree = parser.parse();
         parser.printTree(tree, 0);
@@ -61,7 +62,8 @@ class Browser
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
     {
-        buf.fill(Color.white); //background
+        // buf.fill(Color.white); //background
+        buf.clear();
 
         foreach (command; displayList)
         {
