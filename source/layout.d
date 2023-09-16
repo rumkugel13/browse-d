@@ -259,10 +259,11 @@ class BlockLayout
         {
             auto x2 = this.x + this.width;
             auto y2 = this.y + this.height;
-            auto rect = new DrawRect(this.x, this.y, x2, y2, Color.gray);
+            auto rect = new DrawRect(this.x, this.y, x2, y2, Color.light_gray);
             displayList ~= rect;
         }
 
+        // if (layoutMode() == LayoutMode.Inline)
         foreach (textPos; this.displayList)
         {
             displayList ~= new DrawText(textPos.x, textPos.y, textPos.s, textPos.f);

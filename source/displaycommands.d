@@ -60,7 +60,7 @@ class DrawRect : DisplayCommand
     override void execute(int scroll, DrawBuf buf)
     {
         // note: make sure order of args in Rect is correct
-        buf.fillRect(Rect(left, top, right, bottom), color);
+        buf.fillRect(Rect(left, top - scroll, right, bottom - scroll), color);
     }
 
     override string toString() const

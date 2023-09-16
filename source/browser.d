@@ -45,13 +45,17 @@ final class Browser
     void load(URL url)
     {
         auto parser = new HTMLParser(url.request().htmlBody);
+        // auto test = "<div></div><div>text</div><div><div></div>text</div><span></span><span>text</span>";
+        // test = "<pre>pre text</pre>";
+        // auto parser = new HTMLParser(test);
         auto tree = parser.parse();
         parser.printTree(tree, 0);
 
         document = new DocumentLayout(tree);
         document.layout();
         document.printTree();
-        
+
+        this.displayList.length = 0;
         document.paint(this.displayList);
 
         foreach(command; this.displayList)
