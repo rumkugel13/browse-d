@@ -1,6 +1,6 @@
 module displaycommands;
 
-import dlangui : Font, DrawBuf, Color, Rect, COLOR_TRANSPARENT;
+import dlangui : Font, DrawBuf, Rect, decodeCSSColor;
 
 abstract class DisplayCommand
 {
@@ -30,14 +30,7 @@ class DrawText : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        Color c;
-        switch (color)
-        {
-            case "black": c = Color.black; break;
-            case "blue": c = Color.blue; break;
-            default: c = Color.black; break;
-        }
-        font.drawText(buf, left, top - scroll, text, c);
+        font.drawText(buf, left, top - scroll, text, decodeCSSColor(color));
     }
 
     override string toString() const
@@ -68,16 +61,8 @@ class DrawRect : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        uint c;
-        switch (color)
-        {
-            case "lightblue": c = Color.light_blue; break;
-            case "gray": c = Color.gray; break;
-            default: c = COLOR_TRANSPARENT; break;
-        }
-
         // note: make sure order of args in Rect is correct
-        buf.fillRect(Rect(left, top - scroll, right, bottom - scroll), c);
+        buf.fillRect(Rect(left, top - scroll, right, bottom - scroll), decodeCSSColor(color));
     }
 
     override string toString() const

@@ -171,7 +171,7 @@ class BlockLayout
     {
         auto weight = "font-weight" in  node.style && node.style["font-weight"] == "bold" ? FontWeight.Bold : FontWeight.Normal;
         auto style = "font-style" in node.style && node.style["font-style"] == "italic" ? FONT_STYLE_ITALIC.to!bool : FONT_STYLE_NORMAL.to!bool;
-        auto size = "font-size" in node.style ? (node.style["font-size"][0..$-2].to!float * 0.75f).to!int : 16;
+        auto size = "font-size" in node.style ? (node.style["font-size"][0..$-2].to!float).to!int : 16;
         return FontManager.instance.getFont(size, weight, style, FontFamily.SansSerif, "Arial");
     }
 
@@ -220,7 +220,7 @@ class BlockLayout
             displayList ~= rect;
         }
 
-        // if (layoutMode() == LayoutMode.Inline)
+        if (layoutMode() == LayoutMode.Inline)
         foreach (textPos; this.displayList)
         {
             displayList ~= new DrawText(textPos.x, textPos.y, textPos.s, textPos.f, textPos.color);
