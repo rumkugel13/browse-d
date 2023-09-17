@@ -6,6 +6,7 @@ import url;
 import tab;
 import displaycommand;
 import std.conv : to;
+import std.algorithm : max;
 
 final class Browser
 {
@@ -13,6 +14,8 @@ final class Browser
     CanvasWidget canvas;
     Tab[] tabs;
     ulong activeTab;
+    string focus;
+    dstring addressBar;
 
     this()
     {
@@ -71,7 +74,7 @@ final class Browser
 
             displayList ~= new DrawLine(x1, 0, x1, 40, "black", 1);
             displayList ~= new DrawLine(x2, 0, x2, 40, "black", 1);
-            displayList ~= new DrawText(x1 + 10, 10, name, tabFont, "brown");   // test color
+            displayList ~= new DrawText(x1 + 10, 10, name, tabFont, "black");
 
             if (i == activeTab)
             {
@@ -83,6 +86,25 @@ final class Browser
         auto buttonFont = FontManager.instance.getFont(30, FontWeight.Normal, false, FontFamily.SansSerif, "Arial");
         displayList ~= new DrawOutline(10, 10, 30, 30, "black", 1);
         displayList ~= new DrawText(11, 0, "+", buttonFont, "black");
+
+
+        displayList ~= new DrawOutline(40, 50, WIDTH - 10, 90, "black", 1);
+        if (focus == "address bar")
+        {
+            displayList ~= new DrawText(55, 55, addressBar.to!dstring, buttonFont, "black");
+            auto w = buttonFont.textSize(addressBar.to!dstring).x;
+            displayList ~= new DrawLine(55 + w, 55, 55 + w, 85, "black", 1);
+        }
+        else 
+        {  
+            auto url = tabs[activeTab].url.toString().to!dstring;
+            displayList ~= new DrawText(55, 55, url, buttonFont, "black");
+        }
+
+        displayList ~= new DrawOutline(10, 50, 35, 90, "black", 1);
+        displayList ~= new DrawText(15, 50, "<", buttonFont, "black");
+
+        
 
         return displayList;
     }
@@ -103,9 +125,39 @@ final class Browser
                     tabs[activeTab].scrollUp();
                     return true;
                 }
+                case KeyCode.RETURN:
+                {
+                    if (focus == "address bar")
+                    {
+                        tabs[activeTab].load(new URL(addressBar));
+                        focus = "";
+                    }
+                }
             default:
-                return false;
+                break;
             }
+        }
+
+        if (event.keyCode == KeyCode.BACK && (event.action == KeyAction.KeyDown || event.action == KeyAction.Repeat))
+        {
+            if (focus == "address bar" && addressBar.length > 0)
+            {
+                addressBar.length--;
+            }
+            return true;
+        }
+
+        if (event.action == KeyAction.Text || event.action == KeyAction.Repeat)
+        {
+            if (event.text.length == 0) return false;
+            if (!(0x20 <= event.text[0] && event.text[0] < 0x7f)) return false;
+
+            if (focus == "address bar")
+            {
+                addressBar ~= event.text.to!dstring;
+            }
+
+            return true;
         }
 
         return false;
@@ -124,12 +176,20 @@ final class Browser
         }
         else if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left)
         {
+            focus = "";
             if (event.y < CHROME_PX)
             {
                 if (40 <= event.x && event.x < 40 + 80 * tabs.length && 0 <= event.y && event.y < 40)
                     activeTab = (event.x - 40) / 80;
                 else if (10 <= event.x && event.x < 30 && 10 <= event.y && event.y < 30)
                     load(new URL("https://browser.engineering/"));
+                else if (10 <= event.x && event.x < 35 && 50 <= event.y && event.y < 90)
+                    tabs[activeTab].goBack();
+                else if (50 <= event.x && event.x < WIDTH - 10 && 50 <= event.y && event.y < 90)
+                {
+                    focus = "address bar";
+                    addressBar = "";
+                }
             }
             else
                 tabs[activeTab].click(event.x, event.y - CHROME_PX);

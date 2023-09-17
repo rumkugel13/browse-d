@@ -202,8 +202,14 @@ class URL
 
     override string toString() const
     {
+        auto portPart = ":" ~ port.to!string;
+        if (scheme == "https" && port == 443)
+            portPart = "";
+        if (scheme == "http" && port == 80)
+            portPart = "";
+
         import std.string : format;
-        return format("URL(scheme=%s, host=%s, port=%s, path=%s)", scheme, host, port, path);
+        return format("%s://%s%s%s", scheme, host, portPart, path);
     }
 }
 

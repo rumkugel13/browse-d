@@ -88,7 +88,22 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Important
       - [ ] Ancestor Selectors
       - [ ] Inline Style Sheets
-  - [ ] Handling Buttons and Links
+  - [x] Handling Buttons and Links
+    - [x] Size and Position for each word
+    - [x] Determine where the user clicks
+    - [x] Split up browser with tabs
+    - [x] Draw tabs, address bar and more
+    - [x] Implement text editing
+    - [ ] Exercises (Optional)
+      - [x] Backspace
+      - [ ] Middle click
+      - [ ] Forward
+      - [ ] Fragments
+      - [ ] Search
+      - [ ] Visited links
+      - [ ] Bookmarks
+      - [ ] Cursor
+      - [ ] Multiple windows
 - [ ] Part 3: Running Applications
   - [ ] Sending Information to Servers
   - [ ] Running Interactive Scripts

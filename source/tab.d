@@ -20,6 +20,7 @@ class Tab
     DocumentLayout document;
     DisplayList displayList;
     int scroll;
+    URL[] history;
 
     this()
     {
@@ -28,6 +29,7 @@ class Tab
 
     void load(URL url)
     {
+        this.history ~= url;
         this.url = url;
         this.scroll = 0;
         HttpResponse response = url.request();
@@ -145,5 +147,16 @@ class Tab
     {
         import std.algorithm : max, min;
         scroll = max(scroll - SCROLL_STEP, 0);
+    }
+
+    void goBack()
+    {
+        if (history.length > 1)
+        {
+            history.length--;
+            auto back = history[$-1];
+            history.length--;
+            load(back); // note: load adds the url back to history
+        }
     }
 }
