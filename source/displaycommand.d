@@ -1,6 +1,8 @@
-module displaycommands;
+module displaycommand;
 
 import dlangui : Font, DrawBuf, Rect, decodeCSSColor;
+
+alias DisplayList = DisplayCommand[];
 
 abstract class DisplayCommand
 {
@@ -23,7 +25,7 @@ class DrawText : DisplayCommand
         left = x1;
         this.text = text;
         this.font = font;
-        bottom = y1 + font.size() * 3 / 2;
+        bottom = y1 + font.height();
         fontString = getFontDetails();
         this.color = color;
     }

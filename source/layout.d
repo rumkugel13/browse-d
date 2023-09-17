@@ -1,6 +1,6 @@
 module layout;
 
-import browser, url;
+import globals, url;
 import dlangui;
 import std.sumtype : match;
 import std.string;
@@ -8,7 +8,7 @@ import std.algorithm : map, sum;
 import std.array;
 import std.algorithm : maxElement;
 import node;
-import displaycommands;
+import displaycommand;
 
 auto BLOCK_ELEMENTS = [
     "html", "body", "article", "section", "nav", "aside",
