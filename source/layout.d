@@ -4,6 +4,9 @@ import browser, url;
 import dlangui;
 import std.sumtype : match;
 import std.string;
+import std.algorithm : map, sum;
+import std.array;
+import std.algorithm : maxElement;
 import node;
 import displaycommands;
 
@@ -43,28 +46,28 @@ class BlockLayout
     int cursor_x = HSTEP, cursor_y = VSTEP;
     int x = 0, y = 0;
     int width = 0, height = 0;
-    Node tree;
+    Node node;
     TextPos[] displayList;
-    WordPos[] line;
     BlockLayout parent, previous;
+    TextLayout previousWord;
     BlockLayout[] children;
 
-    this(Node tree, BlockLayout parent, BlockLayout previous)
+    this(Node node, BlockLayout parent, BlockLayout previous)
     {
-        this.tree = tree;
+        this.node = node;
         this.parent = parent;
         this.previous = previous;
     }
 
-    protected this(Node tree)
+    protected this(Node node)
     {
-        this.tree = tree;
+        this.node = node;
     }
 
     void layout()
     {
         this.x = parent.x;
-        if (previous !is null && typeid(previous) != typeid(NoLayout))
+        if (previous)
             this.y = previous.y + previous.height;
         else
             this.y = parent.y;
@@ -77,31 +80,21 @@ class BlockLayout
         }
         else
         {
-            cursor_x = cursor_y = 0;
-
-            line = WordPos[].init;
-            recurse(tree);
-            flush();
+            newLine();
+            recurse(this.node);
         }
         foreach (child; children)
         {
             child.layout();
         }
-        if (mode == LayoutMode.Block)
-        {
-            import std.algorithm : map, sum;
-            this.height = children.map!((child) => child.height).sum();     
-        }
-        else 
-        {
-            this.height = cursor_y + VSTEP / 2; // add a bit of space after a block or paragraph
-        }
+        
+        this.height = children.map!((child) => child.height).sum();
     }
 
     void layoutIntermediate()
     {
-        BlockLayout previous = new NoLayout();
-        foreach (child; tree.children)
+        BlockLayout previous = null;
+        foreach (child; node.children)
         {
             auto next = new BlockLayout(child, this, previous);
             children ~= next;
@@ -111,12 +104,12 @@ class BlockLayout
 
     LayoutMode layoutMode() inout
     {
-        if (typeid(tree) == typeid(node.Text))
+        if (typeid(node) == typeid(Text))
             return LayoutMode.Inline;
-        else if (tree.children.length > 0)
+        else if (node.children.length > 0)
         {
             import std.algorithm : canFind;
-            foreach (child; tree.children)
+            foreach (child; node.children)
             {
                 auto tag = cast(Element) child;
                 if (tag !is null && BLOCK_ELEMENTS.canFind(tag.tag))
@@ -129,21 +122,21 @@ class BlockLayout
             return LayoutMode.Block;
     }
 
-    void recurse(Node tree)
+    void recurse(Node node)
     {
-        if (typeid(tree) == typeid(node.Text))
+        if (typeid(node) == typeid(Text))
         {
-            foreach (word; (cast(node.Text) tree).text.split())
+            foreach (word; (cast(Text) node).text.split())
             {
-                this.word(tree, word);
+                this.word(node, word);
             }
         }
         else
         {
-            auto tag = cast(Element) tree;
+            auto tag = cast(Element) node;
             if (tag.tag == "br")
             {
-                flush();
+                newLine();
             }
 
             foreach (child; tag.children)
@@ -155,15 +148,18 @@ class BlockLayout
 
     void word(Node node, string word)
     {
-        auto color = "color" in node.style ? node.style["color"] : "black";
         auto font = getFont(node);
         auto wordWidth = font.textSize(word.to!dstring).x;
         if (cursor_x + wordWidth > this.width)
         {
-            flush();
+            newLine();
         }
 
-        line ~= WordPos(cursor_x, word.to!dstring, font, color);
+        auto line = children[$-1];
+        auto text = new TextLayout(node, word, line, previousWord);
+        line.children ~= text;
+        previousWord = text;
+
         cursor_x += wordWidth + font.textSize(" ").x;
     }
 
@@ -175,45 +171,20 @@ class BlockLayout
         return FontManager.instance.getFont(size, weight, style, FontFamily.SansSerif, "Arial");
     }
 
-    void flush()
+    void newLine()
     {
-        if (line.empty)
-            return;
-
-        import std.algorithm : map;
-        import std.array;
-
-        auto heights = line.map!((w) => w.f.height()).array;
-        auto baselines = line.map!((w) => w.f.baseline()).array;
-
-        auto descents = heights;
-        descents[] -= baselines[];
-        auto ascents = baselines;
-
-        import std.algorithm : maxElement;
-
-        auto maxAscent = ascents.maxElement;
-        auto totalBaseline = cursor_y + maxAscent * 5 / 4;
-
-        foreach (wordpos; line)
-        {
-            auto x = this.x + wordpos.x;
-            auto y = this.y + totalBaseline - wordpos.f.baseline();
-            displayList ~= TextPos(x, y, wordpos.s, wordpos.f, wordpos.color);
-        }
-
+        previousWord = null;
         cursor_x = 0;
-        line.length = 0;
-
-        auto maxDescent = descents.maxElement;
-        cursor_y = totalBaseline + maxDescent * 5 / 4;
+        auto lastLine = children.length > 0 ? children[$-1] : null;
+        auto newLine = new LineLayout(node, this, lastLine);
+        children ~= newLine;
     }
 
     void paint(ref DisplayList displayList)
     {
-        if ("background-color" in tree.style)
+        if ("background-color" in node.style)
         {
-            string color = tree.style["background-color"];
+            string color = node.style["background-color"];
             auto x2 = this.x + this.width;
             auto y2 = this.y + this.height;
             auto rect = new DrawRect(this.x, this.y, x2, y2, color);
@@ -235,15 +206,15 @@ class BlockLayout
     override string toString() const
     {
         import std.format;
-        return format("BlockLayout[%s](x=%s, y=%s, w=%s, h=%s, node=%s)", layoutMode, x, y, width, height, tree);
+        return format("BlockLayout[%s](x=%s, y=%s, w=%s, h=%s, node=%s)", layoutMode, x, y, width, height, node);
     }
 }
 
 class DocumentLayout : BlockLayout
 {
-    this(Node tree)
+    this(Node node)
     {
-        super(tree);
+        super(node);
     }
 
     override void layout()
@@ -252,7 +223,7 @@ class DocumentLayout : BlockLayout
         this.x = HSTEP;
         this.y = VSTEP;
         
-        auto child = new BlockLayout(tree, this, new NoLayout());
+        auto child = new BlockLayout(node, this, null);
         children ~= child;
         child.layout();
 
@@ -293,19 +264,95 @@ class DocumentLayout : BlockLayout
     }
 }
 
-class NoLayout : BlockLayout
+class LineLayout : BlockLayout
 {
-    this()
+    this(Node node, BlockLayout parent, BlockLayout previous)
     {
-        super(new None());
+        super(node, parent, previous);
     }
 
     override void layout()
     {
+        width = parent.width;
+        x = parent.x;
+
+        if (previous)
+            y = previous.y + previous.height;
+        else
+            y = parent.y;
+        
+        foreach (word; children)
+        {
+            word.layout();
+        }
+
+        auto heights = children.map!((w) => (cast(TextLayout)w).font.height()).array;
+        auto baselines = children.map!((w) => (cast(TextLayout)w).font.baseline()).array;
+
+        auto descents = heights;
+        descents[] -= baselines[];
+        auto ascents = baselines;
+
+        auto maxAscent = ascents.maxElement;
+        auto totalBaseline = this.y + maxAscent * 5 / 4;
+
+        foreach (word; children)
+        {
+            word.y = totalBaseline - (cast(TextLayout)word).font.baseline();
+        }
+
+        auto maxDescent = descents.maxElement;
+        this.height = (maxAscent + maxDescent) * 5 / 4;
     }
 
     override void paint(ref DisplayList displayList)
     {
-        
+        foreach (child; children)
+            child.paint(displayList);
+    }
+
+    override string toString() const
+    {
+        import std.format;
+        return format("LineLayout(x=%s, y=%s, w=%s, h=%s)", x, y, width, height);
+    }
+}
+
+class TextLayout : BlockLayout
+{
+    string word;
+    Font font;
+
+    this(Node node, string word, BlockLayout parent, TextLayout previous)
+    {
+        this.word = word;
+        super(node, parent, previous);
+    }
+
+    override void layout()
+    {
+        this.font = getFont(node);
+
+        this.width = font.textSize(word.to!dstring).x;
+        if (previous)
+        {
+            auto space = (cast(TextLayout)previous).font.textSize(" ").x;
+            this.x = previous.x + space + previous.width;
+        }
+        else {
+            this.x = parent.x;
+        }
+    }
+
+    override void paint(ref DisplayList displayList)
+    {
+        auto color = "color" in node.style ? node.style["color"] : "black";
+        displayList ~= new DrawText(this.x, this.y, this.word.to!dstring, this.font, color);
+    }
+
+    override string toString() const
+    {
+        import std.format;
+        return format("TextLayout(x=%s, y=%s, w=%s, h=%s, word=%s)", x, y, width, height, word);
     }
 }
