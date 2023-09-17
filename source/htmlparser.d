@@ -115,7 +115,7 @@ class HTMLParser
         }
         else
         {
-            auto parent = unfinished.length > 0 ? unfinished[$ - 1] : new None();
+            auto parent = unfinished.length > 0 ? unfinished[$ - 1] : null;
             auto node = new Element(tag, tagAttribute.attributes, parent);
             unfinished ~= node;
         }

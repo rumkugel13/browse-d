@@ -49,10 +49,6 @@ class Element : Node
     }
 }
 
-class None : Node
-{
-}
-
 Node[] treeToList(Node tree, ref Node[] list)
 {
     list ~= tree;
