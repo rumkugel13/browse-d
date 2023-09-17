@@ -238,7 +238,7 @@ class DocumentLayout : BlockLayout
     override string toString() const
     {
         import std.format;
-        return format("DocumentLayout(x=%s, y=%s, w=%s, h=%s)", x, y, width, height);
+        return format("DocumentLayout(x=%s, y=%s, w=%s, h=%s, node=%s)", x, y, width, height, node);
     }
 
     void printTree()
@@ -314,7 +314,7 @@ class LineLayout : BlockLayout
     override string toString() const
     {
         import std.format;
-        return format("LineLayout(x=%s, y=%s, w=%s, h=%s)", x, y, width, height);
+        return format("LineLayout(x=%s, y=%s, w=%s, h=%s, node=%s)", x, y, width, height, node);
     }
 }
 
@@ -339,9 +339,12 @@ class TextLayout : BlockLayout
             auto space = (cast(TextLayout)previous).font.textSize(" ").x;
             this.x = previous.x + space + previous.width;
         }
-        else {
+        else 
+        {
             this.x = parent.x;
         }
+
+        this.height = this.font.height();
     }
 
     override void paint(ref DisplayList displayList)
@@ -353,6 +356,14 @@ class TextLayout : BlockLayout
     override string toString() const
     {
         import std.format;
-        return format("TextLayout(x=%s, y=%s, w=%s, h=%s, word=%s)", x, y, width, height, word);
+        return format("TextLayout(x=%s, y=%s, w=%s, h=%s, word=%s, node=%s)", x, y, width, height, word, node);
     }
+}
+
+BlockLayout[] treeToList(BlockLayout tree, ref BlockLayout[] list)
+{
+    list ~= tree;
+    foreach(child; tree.children)
+        auto _ = treeToList(child, list);
+    return list;
 }

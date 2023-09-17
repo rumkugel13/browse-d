@@ -5,7 +5,7 @@ import url;
 import std.range : split;
 import std.conv : to;
 import std.sumtype : match;
-import std.stdio : writeln;
+import std.stdio : writeln, stdout;
 import layout;
 import htmlparser, cssparser;
 import displaycommands;
@@ -22,10 +22,12 @@ final class Browser
 {
     Window window;
     CanvasWidget canvas;
+    URL url;
     DocumentLayout document;
+    Node tree;
     DisplayList displayList;
     Rule[] defaultStyleSheet;
-    int scroll = 0;
+    int scroll;
 
     this()
     {
@@ -49,12 +51,14 @@ final class Browser
 
     void load(URL url)
     {
-        auto parser = new HTMLParser(url.request().htmlBody);
-        // auto test = "<div></div><div>text</div><div><div></div>text</div><span></span><span>text</span>";
-        // test = "<pre>pre text</pre>";
+        this.url = url;
+        this.scroll = 0;
+        HttpResponse response = url.request();
+        auto parser = new HTMLParser(response.htmlBody);
+        // auto test = "<a href=\"http://test/0\">Click me</a>";
         // auto parser = new HTMLParser(test);
-        auto tree = parser.parse();
-        parser.printTree(tree, 0);
+        tree = parser.parse();
+        // parser.printTree(tree, 0);
 
         auto rules = defaultStyleSheet.dup;
 
@@ -72,16 +76,16 @@ final class Browser
 
         foreach (link; links)
         {
-            HttpResponse response;
+            HttpResponse r;
             try
             {
-                response = url.resolve(link).request();
+                r = url.resolve(link).request();
             }
             catch (Exception _) 
             {
                 continue;
             }
-            rules ~= new CSSParser(response.htmlBody).parse();
+            rules ~= new CSSParser(r.htmlBody).parse();
         }
 
         import std.algorithm : sort;
@@ -97,15 +101,15 @@ final class Browser
 
         document = new DocumentLayout(tree);
         document.layout();
-        document.printTree();
+        // document.printTree();
 
         this.displayList.length = 0;
         document.paint(this.displayList);
 
-        foreach(command; this.displayList)
-        {
-            writeln(command);
-        }
+        // foreach(command; this.displayList)
+        // {
+        //     writeln(command);
+        // }
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
@@ -161,8 +165,51 @@ final class Browser
             }
             return true;
         }
+        else if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left)
+        {
+            click(event.x, event.y);
+            return true;
+        }
 
         return false;
+    }
+
+    void click(int x, int y)
+    {
+        y += scroll;
+
+        BlockLayout[] list, objs;
+        foreach(node; treeToList(document, list))
+        {
+            if (node.x <= x && x < node.x + node.width &&
+                node.y <= y && y < node.y + node.height)
+            {
+                objs ~= node;
+            }
+        }
+
+        if (objs.length == 0) return;
+        auto elt = objs[$-1].node;
+
+        while (elt)
+        {
+            writeln(elt);
+            stdout.flush();
+            auto text = cast(Text)elt;
+            auto element = cast(Element)elt;
+            if (text !is null) 
+            {
+                
+            }
+            else if (element.tag == "a" && "href" in element.attributes)
+            {
+                auto url = this.url.resolve(element.attributes["href"]);
+                load(url);
+                canvas.invalidate(); // mark to redraw
+                return;
+            }
+            elt = elt.parent;
+        }
     }
 
     void scrollDown()
