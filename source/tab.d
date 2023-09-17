@@ -90,11 +90,11 @@ class Tab
     {
         foreach (command; displayList)
         {
-            if (command.top > scroll + HEIGHT)
+            if (command.top > scroll + HEIGHT - CHROME_PX)
                 continue;
             if (command.bottom < scroll)
                 continue;
-            command.execute(scroll, buf);
+            command.execute(scroll - CHROME_PX, buf);
         }
     }
 
@@ -137,7 +137,7 @@ class Tab
     void scrollDown()
     {
         import std.algorithm : max, min;
-        auto maxY = max(document.height - HEIGHT, 0);
+        auto maxY = max(document.height - (HEIGHT - CHROME_PX), 0);
         scroll = min(scroll + SCROLL_STEP, maxY);
     }
 
