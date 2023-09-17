@@ -77,8 +77,8 @@ class URL
             temp = temp[2].findSplit("\r\n");
             if (temp[2].startsWith("\r\n"))
                 break;
-            auto splitLine = temp[0].split(":");
-            responseHeaders[splitLine[0].toLower()] = splitLine[1].strip();
+            auto splitLine = temp[0].findSplit(":");
+            responseHeaders[splitLine[0].toLower()] = splitLine[2].strip();
         }
 
         assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
