@@ -15,7 +15,7 @@ final class Browser
     Tab[] tabs;
     ulong activeTab;
     string focus;
-    dstring addressBar;
+    string addressBar;
 
     this()
     {
@@ -125,13 +125,14 @@ final class Browser
                     tabs[activeTab].scrollUp();
                     return true;
                 }
-                case KeyCode.RETURN:
+            case KeyCode.RETURN:
                 {
                     if (focus == "address bar")
                     {
                         tabs[activeTab].load(new URL(addressBar));
                         focus = "";
                     }
+                    return true;
                 }
             default:
                 break;
@@ -154,7 +155,7 @@ final class Browser
 
             if (focus == "address bar")
             {
-                addressBar ~= event.text.to!dstring;
+                addressBar ~= event.text.to!string;
             }
 
             return true;
