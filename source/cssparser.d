@@ -94,7 +94,7 @@ class CSSParser
             catch (Exception e)
             {
                 import std.stdio;
-                writeln(e);
+                writeln(e.msg);
                 auto why = ignoreUntil([';', '}']);
                 if (why == ';')
                 {
@@ -153,7 +153,7 @@ class CSSParser
             catch (Exception e)
             {
                 import std.stdio;
-                writeln(e);
+                writeln(e.msg);
                 auto why = ignoreUntil(['}']);
                 if (why == '}')
                 {
