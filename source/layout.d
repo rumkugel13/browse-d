@@ -286,6 +286,12 @@ class LineLayout : BlockLayout
             word.layout();
         }
 
+        if (!children)
+        {
+            this.height = 0;
+            return;
+        }
+
         auto heights = children.map!((w) => (cast(TextLayout)w).font.height()).array;
         auto baselines = children.map!((w) => (cast(TextLayout)w).font.baseline()).array;
 
