@@ -14,7 +14,7 @@ Based on [the browser book](https://browser.engineering/)
     - [X] Print Text
     - [ ] Exercises (Optional)
       - [ ] Alternate Encodings
-      - [ ] HTTP/1.1
+      - [X] HTTP/1.1
       - [ ] File URLs
       - [ ] data
       - [ ] Body tag

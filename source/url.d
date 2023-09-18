@@ -12,6 +12,12 @@ import std.utf;
 import std.socket;
 import deimos.openssl.ssl, deimos.openssl.err;
 
+struct HttpRequest
+{
+    string request;
+    string[string] headers;
+}
+
 struct HttpResponse
 {
     string[string] headers;
@@ -97,7 +103,7 @@ class URL
         auto address = new InternetAddress(host, port);
         tcpSocket.connect(address);
 
-        tcpSocket.send(("GET " ~ path ~ " HTTP/1.0\r\n" ~ "Host: " ~ host ~ " \r\n\r\n").toUTF8);
+        tcpSocket.send(makeRequest.toUTF8);
 
         char[1024] buf;
         string receivedData;
@@ -157,7 +163,7 @@ class URL
         }
         writeln("SSL success");
 
-        auto request = ("GET " ~ path ~ " HTTP/1.0\r\n" ~ "Host: " ~ host ~ " \r\n\r\n").toUTF8;
+        auto request = makeRequest.toUTF8;
         SSL_write(ssl, request.ptr, cast(int)request.length);
 
         char[1024] buf;
@@ -198,6 +204,24 @@ class URL
             }
         }
         return new URL(scheme ~ "://" ~ host ~ ":" ~ port.to!string ~ url);
+    }
+
+    private string makeRequest()
+    {
+        HttpRequest request;
+        request.request = "GET " ~ path ~ " HTTP/1.1\r\n";
+
+        request.headers["Host"] = host;
+        request.headers["Connection"] = "close";
+        request.headers["User-Agent"] = "Drowsey";
+
+        string s = request.request;
+        foreach (header, value; request.headers)
+        {
+            s ~= header ~ ": " ~ value ~ "\r\n";
+        }
+        s ~= "\r\n";
+        return s;
     }
 
     override string toString() const
