@@ -39,6 +39,7 @@ Based on [the browser book](https://browser.engineering/)
     - [x] Split lines at words
     - [x] Text can be bold and italic
     - [x] Text in different sizes can be mixed
+    - [X] Font Cache
     - [ ] Exercises (Optional)
       - [ ] Centered Text
       - [ ] Superscripts

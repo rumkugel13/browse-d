@@ -19,6 +19,25 @@ auto BLOCK_ELEMENTS = [
     "legend", "details", "summary"
 ];
 
+Font[FontKey] FONT_CACHE;
+
+Font getCachedFont(int size, int weight, bool italic)
+{
+    auto key = FontKey(size, weight, italic);
+    if (key !in FONT_CACHE)
+    {
+        auto font = FontManager.instance.getFont(size, weight, italic, FontFamily.SansSerif, "Arial");
+        FONT_CACHE[key] = font;
+    }
+    return FONT_CACHE[key];
+}
+
+struct FontKey
+{
+    int size, weight;
+    bool italic;
+}
+
 struct WordPos
 {
     int x;
@@ -166,8 +185,8 @@ class BlockLayout
     {
         auto weight = "font-weight" in  node.style && node.style["font-weight"] == "bold" ? FontWeight.Bold : FontWeight.Normal;
         auto style = "font-style" in node.style && node.style["font-style"] == "italic" ? FONT_STYLE_ITALIC.to!bool : FONT_STYLE_NORMAL.to!bool;
-        auto size = "font-size" in node.style ? (node.style["font-size"][0..$-2].to!float).to!int : 16;
-        return FontManager.instance.getFont(size, weight, style, FontFamily.SansSerif, "Arial");
+        auto size = "font-size" in node.style && node.style["font-size"].length > 2 ? node.style["font-size"][0..$-2].to!float.to!int : 16;
+        return getCachedFont(size, weight, style);
     }
 
     void newLine()
