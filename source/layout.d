@@ -4,9 +4,9 @@ import globals, url;
 import dlangui;
 import std.sumtype : match;
 import std.string;
-import std.algorithm : map, sum;
+import std.algorithm : map, sum, maxElement;
 import std.array;
-import std.algorithm : maxElement;
+import std.conv : to;
 import node;
 import displaycommand;
 
@@ -43,11 +43,10 @@ enum LayoutMode
 
 class BlockLayout
 {
-    int cursor_x = HSTEP, cursor_y = VSTEP;
+    int cursor_x = HSTEP;
     int x = 0, y = 0;
     int width = 0, height = 0;
     Node node;
-    TextPos[] displayList;
     BlockLayout parent, previous;
     TextLayout previousWord;
     BlockLayout[] children;
@@ -187,14 +186,7 @@ class BlockLayout
             string color = node.style["background-color"];
             auto x2 = this.x + this.width;
             auto y2 = this.y + this.height;
-            auto rect = new DrawRect(this.x, this.y, x2, y2, color);
-            displayList ~= rect;
-        }
-
-        if (layoutMode() == LayoutMode.Inline)
-        foreach (textPos; this.displayList)
-        {
-            displayList ~= new DrawText(textPos.x, textPos.y, textPos.s, textPos.f, textPos.color);
+            displayList ~= new DrawRect(this.x, this.y, x2, y2, color);
         }
 
         foreach (child; children)
