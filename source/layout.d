@@ -111,12 +111,12 @@ class BlockLayout
 
     void layoutIntermediate()
     {
-        BlockLayout previous = null;
+        BlockLayout prev = null;
         foreach (child; node.children)
         {
-            auto next = new BlockLayout(child, this, previous);
+            auto next = new BlockLayout(child, this, prev);
             children ~= next;
-            previous = next;
+            prev = next;
         }
     }
 
