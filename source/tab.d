@@ -12,6 +12,7 @@ import node;
 import layout;
 import displaycommand;
 import globals;
+import std.datetime.stopwatch : StopWatch, AutoStart;
 
 class Tab
 {
@@ -21,6 +22,7 @@ class Tab
     DisplayList displayList;
     int scroll;
     URL[] history;
+    StopWatch sw;
 
     this()
     {
@@ -32,13 +34,26 @@ class Tab
         this.history ~= url;
         this.url = url;
         this.scroll = 0;
+        sw = StopWatch(AutoStart.yes);
         HttpResponse response = url.request();
-        auto parser = new HTMLParser(response.htmlBody);
-        // auto test = "<a href=\"http://test/0\">Click me</a>";
-        // auto parser = new HTMLParser(test);
-        auto tree = parser.parse();
-        // parser.printTree(tree, 0);
+        handleResponse(response);
+    }
 
+    void handleResponse(HttpResponse response)
+    {
+        writeln("Request took " ~ sw.peek().toString);
+        sw.reset();
+        auto parser = new HTMLParser(response.htmlBody);
+//         auto test = "<pre class='sourceCode python'><code class='sourceCode python'><span id='cb6-1'><a href='#cb6-1' aria-hidden='true' tabindex='-1'></a><span class='kw'>class</span> URL:</span>
+// <span id='cb6-2'><a href='#cb6-2' aria-hidden='true' tabindex='-1'></a>    <span class='kw'>def</span> <span class='fu'>__init__</span>(<span class='va'>self</span>, url):</span>
+// <span id='cb6-3'><a href='#cb6-3' aria-hidden='true' tabindex='-1'></a>        <span class='va'>self</span>.scheme, url <span class='op'>=</span> url.split(<span class='st'>'://'</span>, <span class='dv'>1</span>)</span>
+// <span id='cb6-4'><a href='#cb6-4' aria-hidden='true' tabindex='-1'></a>        <span class='cf'>assert</span> <span class='va'>self</span>.scheme <span class='op'>==</span> <span class='st'>'http'</span>, <span class='op'>\\</span></span>
+// <span id='cb6-5'><a href='#cb6-5' aria-hidden='true' tabindex='-1'></a>            <span class='st'>'Unknown scheme </span><span class='sc'>{}</span><span class='st'>'</span>.<span class='bu'>format</span>(<span class='va'>self</span>.scheme)</span></code></pre>";
+//         auto parser = new HTMLParser(test);
+        auto tree = parser.parse();
+        parser.printTree(tree, 0);
+        writeln("Parsing took " ~ sw.peek().toString);
+        sw.reset();
         auto rules = defaultStyleSheet.dup;
 
         string[] links;
@@ -66,21 +81,30 @@ class Tab
             }
             rules ~= new CSSParser(r.htmlBody).parse();
         }
+        writeln("Requests took " ~ sw.peek().toString);
+        sw.reset();
         
         cssparser.style(tree, rules.sort.array);
+        writeln("Styling took " ~ sw.peek().toString);
+        sw.reset();
 
         // auto cssTest = "a {p :v} ";
         // auto rules = new CSSParser(cssTest).parse();
-        // writeln(rules);
+        foreach (rule; rules)
+            writeln(rule);
         // if (rules.length > 0)
         //     return;
 
         document = new DocumentLayout(tree);
         document.layout();
         // document.printTree();
+        writeln("Layout took " ~ sw.peek().toString);
+        sw.reset();
 
         this.displayList.length = 0;
         document.paint(this.displayList);
+        writeln("Painting took " ~ sw.peek().toString);
+        sw.stop();
 
         // foreach(command; this.displayList)
         // {
