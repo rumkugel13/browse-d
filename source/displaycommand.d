@@ -63,6 +63,7 @@ class DrawRect : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
+        if (color == "lightblue") color = "light_blue";
         buf.fillRect(Rect(left, top - scroll, right, bottom - scroll), decodeCSSColor(color));
     }
 
