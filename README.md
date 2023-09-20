@@ -21,7 +21,7 @@ Based on [the browser book](https://browser.engineering/)
       - [X] Entities
       - [ ] view-source
       - [ ] Compression
-      - [ ] Redirects
+      - [X] Redirects
       - [ ] Caching
   - [x] Drawing to the Screen
     - [x] Window Creating

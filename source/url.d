@@ -24,12 +24,22 @@ struct HttpResponse
     string htmlBody;
 }
 
-class URL
+struct HttpStatus
+{
+    string httpVersion, statusCode, explanation;
+}
+
+final class URL
 {
     public string scheme, host, path;
     public ushort port;
 
     this(string url)
+    {
+        parse(url);
+    }
+
+    void parse(string url)
     {
         auto split = url.split("://");
         scheme = split[0];
@@ -56,8 +66,10 @@ class URL
         }
     }
 
-    HttpResponse request()
+    HttpResponse request(int redirect = 10)
     {
+        if (redirect == 0) return HttpResponse.init; // too many redirects
+
         string receivedData;
         if (scheme == "https")
             receivedData = requestHttps();
@@ -66,15 +78,9 @@ class URL
 
         if (receivedData.empty) return HttpResponse.init;
 
-        import std.algorithm : findSplit;
         auto temp = receivedData.findSplit("\r\n");
 
-        auto statusLine = temp[0];
-        auto splitStatus = statusLine.split();
-        auto httpVersion = splitStatus[0];
-        auto status = splitStatus[1];
-        auto explanation = splitStatus[2];
-        assert(status == "200", status ~ ":" ~ explanation);
+        auto status = parseStatus(temp[0]);
 
         string[string] responseHeaders;
 
@@ -87,12 +93,30 @@ class URL
             responseHeaders[splitLine[0].toLower()] = splitLine[2].strip();
         }
 
+        if (status.statusCode.startsWith("30"))
+        {
+            auto location = responseHeaders["location"];
+            parse(resolve(location).toString());
+            return request(redirect - 1);
+        }
+
         assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
         assert("content-encoding" !in responseHeaders, "Unsupported header: " ~ "content-encoding");
 
         auto responseBody = temp[2][2..$];
 
         return HttpResponse(responseHeaders, responseBody);
+    }
+
+    HttpStatus parseStatus(string statusLine)
+    {
+        writeln(statusLine);
+        auto splitStatus = statusLine.split();
+        auto httpVersion = splitStatus[0];
+        auto statusCode = splitStatus[1];
+        auto explanation = splitStatus[2];
+        assert(["200", "301", "302", "404"].canFind(statusCode), statusCode ~ ":" ~ explanation);
+        return HttpStatus(httpVersion, statusCode, explanation);
     }
 
     string requestHttp()
@@ -102,10 +126,11 @@ class URL
             tcpSocket.close();
         auto address = new InternetAddress(host, port);
         tcpSocket.connect(address);
+        writeln("Socket connected to " ~ host ~ ":" ~ port.to!string);
 
         tcpSocket.send(makeRequest.toUTF8);
 
-        char[1024] buf;
+        char[1024*64] buf;
         string receivedData;
         long bytesRead;
 
@@ -122,24 +147,22 @@ class URL
         auto tcpSocket = new TcpSocket(AddressFamily.INET);
         scope (exit)
             tcpSocket.close();
-        writeln("Created socket");
+
         auto address = new InternetAddress(host, port);
         tcpSocket.connect(address);
-        writeln("Socket connect");
+        writeln("Socket connected to " ~ host ~ ":" ~ port.to!string);
 
         SSL_load_error_strings();
 
         SSL_CTX *ctx = SSL_CTX_new(TLS_client_method());
 	    assert(!(ctx is null));
         scope(exit) SSL_CTX_free(ctx);
-        writeln("CTX");
 
         // SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, null);
         // SSL_CTX_set_default_verify_paths(ctx);
 
         SSL *ssl = SSL_new(ctx);
         SSL_set_fd(ssl, cast(int)tcpSocket.handle());
-        writeln("SSL");
 
         SSL_set_tlsext_host_name(ssl, host.ptr);
         SSL_set1_host(ssl, host.ptr);
@@ -166,7 +189,7 @@ class URL
         auto request = makeRequest.toUTF8;
         SSL_write(ssl, request.ptr, cast(int)request.length);
 
-        char[1024] buf;
+        char[1024*64] buf;
         string receivedData;
         long bytesRead;
 
