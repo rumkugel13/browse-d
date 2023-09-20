@@ -13,29 +13,32 @@ import layout;
 import displaycommand;
 import globals;
 import std.datetime.stopwatch : StopWatch, AutoStart;
+import urllibparse : quote;
 
 class Tab
 {
     URL url;
-    Rule[] defaultStyleSheet;
+    Rule[] defaultStyleSheet, rules;
     DocumentLayout document;
     DisplayList displayList;
+    Node tree;
     int scroll;
     URL[] history;
     StopWatch sw;
+    Element focus;
 
     this()
     {
         defaultStyleSheet = new CSSParser(readText("browser.css")).parse();
     }
 
-    void load(URL url)
+    void load(URL url, string body)
     {
         this.history ~= url;
         this.url = url;
         this.scroll = 0;
         sw = StopWatch(AutoStart.yes);
-        HttpResponse response = url.request();
+        HttpResponse response = url.request(body);
         handleResponse(response);
     }
 
@@ -50,11 +53,11 @@ class Tab
 // <span id='cb6-4'><a href='#cb6-4' aria-hidden='true' tabindex='-1'></a>        <span class='cf'>assert</span> <span class='va'>self</span>.scheme <span class='op'>==</span> <span class='st'>'http'</span>, <span class='op'>\\</span></span>
 // <span id='cb6-5'><a href='#cb6-5' aria-hidden='true' tabindex='-1'></a>            <span class='st'>'Unknown scheme </span><span class='sc'>{}</span><span class='st'>'</span>.<span class='bu'>format</span>(<span class='va'>self</span>.scheme)</span></code></pre>";
 //         auto parser = new HTMLParser(test);
-        auto tree = parser.parse();
+        tree = parser.parse();
         parser.printTree(tree, 0);
         writeln("Parsing took " ~ sw.peek().toString);
         sw.reset();
-        auto rules = defaultStyleSheet.dup;
+        rules = defaultStyleSheet.dup;
 
         string[] links;
         Node[] list;
@@ -83,29 +86,22 @@ class Tab
         }
         writeln("Requests took " ~ sw.peek().toString);
         sw.reset();
-        
+
+        render();
+        writeln("Rendering took " ~ sw.peek().toString);
+        sw.stop();
+    }
+
+    void render()
+    {
         cssparser.style(tree, rules.sort.array);
-        writeln("Styling took " ~ sw.peek().toString);
-        sw.reset();
-
-        // auto cssTest = "a {p :v} ";
-        // auto rules = new CSSParser(cssTest).parse();
-        foreach (rule; rules)
-            writeln(rule);
-        // if (rules.length > 0)
-        //     return;
-
+        // foreach (rule; rules)
+        //     writeln(rule);
         document = new DocumentLayout(tree);
         document.layout();
         // document.printTree();
-        writeln("Layout took " ~ sw.peek().toString);
-        sw.reset();
-
         this.displayList.length = 0;
         document.paint(this.displayList);
-        writeln("Painting took " ~ sw.peek().toString);
-        sw.stop();
-
         // foreach(command; this.displayList)
         // {
         //     writeln(command);
@@ -126,6 +122,7 @@ class Tab
 
     void click(int x, int y)
     {
+        focus = null;
         y += scroll;
 
         BlockLayout[] list, objs;
@@ -153,10 +150,83 @@ class Tab
             else if (element.tag == "a" && "href" in element.attributes)
             {
                 auto url = this.url.resolve(element.attributes["href"]);
-                load(url);
+                load(url, string.init);
                 return;
             }
+            else if (element.tag == "input")
+            {
+                element.attributes["value"] = "";
+                if (focus)
+                {
+                    focus.isFocused = false;
+                }
+                focus = element;
+                element.isFocused = true;
+                render();
+                return;
+            }
+            else if (element.tag == "button")
+            {
+                while (elt)
+                {
+                    auto tagElt = cast(Element)elt;
+                    if (tagElt && tagElt.tag == "form" && "action" in tagElt.attributes)
+                    {
+                        submitForm(tagElt);
+                        return;
+                    }
+                    elt = elt.parent;
+                }
+            }
             elt = elt.parent;
+        }
+    }
+
+    void submitForm(Element elt)
+    {
+        Element[] inputs;
+        Node[] list;
+        foreach(node; treeToList(elt, list))
+        {
+            auto element = cast(Element)node;
+            if (element !is null && element.tag == "input" && "name" in element.attributes)
+            {
+                inputs ~= element;
+            }
+        }
+
+        string reqBody;
+        foreach (input; inputs)
+        {
+            auto name = quote(input.attributes["name"]);
+            auto value = quote("value" in input.attributes ? input.attributes["value"] : "");
+            reqBody ~= "&" ~ name ~ "=" ~ value;
+        }
+        reqBody = reqBody[1..$];
+        writeln(reqBody);
+
+        auto url = url.resolve(elt.attributes["action"]);
+        load(url, reqBody);
+    }
+
+    void backspace()
+    {
+        if (focus)
+        {
+            auto value = focus.attributes["value"];
+            if (value.length > 0)
+                value.length--;
+            focus.attributes["value"] = value;
+            render();
+        }
+    }
+
+    void keyPress(string text)
+    {
+        if (focus)
+        {
+            focus.attributes["value"] ~= text;
+            render();
         }
     }
 
@@ -180,7 +250,7 @@ class Tab
             history.length--;
             auto back = history[$-1];
             history.length--;
-            load(back); // note: load adds the url back to history
+            load(back, string.init); // note: load adds the url back to history
         }
     }
 }

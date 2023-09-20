@@ -38,7 +38,7 @@ final class Browser
     void load(URL url)
     {
         auto newTab = new Tab();
-        newTab.load(url);
+        newTab.load(url, string.init);
         activeTab = tabs.length;
         tabs ~= newTab;
     }
@@ -129,7 +129,7 @@ final class Browser
                 {
                     if (focus == "address bar")
                     {
-                        tabs[activeTab].load(new URL(addressBar));
+                        tabs[activeTab].load(new URL(addressBar), string.init);
                         focus = "";
                     }
                     return true;
@@ -145,6 +145,10 @@ final class Browser
             {
                 addressBar.length--;
             }
+            else if (focus == "content")
+            {
+                tabs[activeTab].backspace();
+            }
             return true;
         }
 
@@ -156,6 +160,10 @@ final class Browser
             if (focus == "address bar")
             {
                 addressBar ~= event.text.to!string;
+            }
+            else if (focus == "content")
+            {
+                tabs[activeTab].keyPress(event.text.to!string);
             }
 
             return true;
@@ -193,7 +201,10 @@ final class Browser
                 }
             }
             else
+            {
+                focus = "content";
                 tabs[activeTab].click(event.x, event.y - CHROME_PX);
+            }
             return true;
         }
 

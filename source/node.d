@@ -5,6 +5,7 @@ abstract class Node
     Node[] children;
     Node parent;
     string[string] style;
+    bool isFocused;
 
     override string toString() const pure @safe
     {

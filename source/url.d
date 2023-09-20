@@ -2,7 +2,7 @@ module url;
 
 import std.range : split, empty;
 import std.algorithm : canFind, startsWith, findSplit;
-import std.string : splitLines, toLower, strip;
+import std.string : splitLines, toLower, strip, empty;
 import std.typecons : tuple, Tuple;
 import std.array : join;
 import std.stdio;
@@ -31,7 +31,7 @@ struct HttpStatus
 
 final class URL
 {
-    public string scheme, host, path;
+    public string method, scheme, host, path;
     public ushort port;
 
     this(string url)
@@ -66,15 +66,17 @@ final class URL
         }
     }
 
-    HttpResponse request(int redirect = 10)
+    HttpResponse request(string payload = string.init, int redirect = 10)
     {
         if (redirect == 0) return HttpResponse.init; // too many redirects
+        
+        method = (payload.empty) ? "GET" : "POST";
 
         string receivedData;
         if (scheme == "https")
-            receivedData = requestHttps();
+            receivedData = requestHttps(payload);
         else
-            receivedData = requestHttp();
+            receivedData = requestHttp(payload);
 
         if (receivedData.empty) return HttpResponse.init;
 
@@ -97,7 +99,7 @@ final class URL
         {
             auto location = responseHeaders["location"];
             parse(resolve(location).toString());
-            return request(redirect - 1);
+            return request(payload, redirect - 1);
         }
 
         assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
@@ -119,7 +121,7 @@ final class URL
         return HttpStatus(httpVersion, statusCode, explanation);
     }
 
-    string requestHttp()
+    string requestHttp(string payload = string.init)
     {
         auto tcpSocket = new TcpSocket(AddressFamily.INET);
         scope (exit)
@@ -128,7 +130,7 @@ final class URL
         tcpSocket.connect(address);
         writeln("Socket connected to " ~ host ~ ":" ~ port.to!string);
 
-        tcpSocket.send(makeRequest.toUTF8);
+        tcpSocket.send(makeRequest(payload).toUTF8);
 
         char[1024*64] buf;
         string receivedData;
@@ -142,7 +144,7 @@ final class URL
         return receivedData;
     }
 
-    string requestHttps()
+    string requestHttps(string payload = string.init)
     {
         auto tcpSocket = new TcpSocket(AddressFamily.INET);
         scope (exit)
@@ -186,7 +188,7 @@ final class URL
         }
         writeln("SSL success");
 
-        auto request = makeRequest.toUTF8;
+        auto request = makeRequest(payload).toUTF8;
         SSL_write(ssl, request.ptr, cast(int)request.length);
 
         char[1024*64] buf;
@@ -229,14 +231,18 @@ final class URL
         return new URL(scheme ~ "://" ~ host ~ ":" ~ port.to!string ~ url);
     }
 
-    private string makeRequest()
+    private string makeRequest(string payload = string.init)
     {
         HttpRequest request;
-        request.request = "GET " ~ path ~ " HTTP/1.1\r\n";
+        request.request = method ~ " " ~ path ~ " HTTP/1.1\r\n";
 
         request.headers["Host"] = host;
         request.headers["Connection"] = "close";
         request.headers["User-Agent"] = "Drowsey";
+        if (!payload.empty)
+        {
+            request.headers["Content-Length"] = payload.toUTF8.length.to!string;
+        }
 
         string s = request.request;
         foreach (header, value; request.headers)
@@ -244,6 +250,11 @@ final class URL
             s ~= header ~ ": " ~ value ~ "\r\n";
         }
         s ~= "\r\n";
+
+        if (!payload.empty)
+        {
+            s ~= payload;
+        }
         return s;
     }
 

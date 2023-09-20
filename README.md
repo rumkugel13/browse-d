@@ -46,7 +46,7 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Soft hyphens
       - [ ] Small caps
       - [ ] Preformatted text
-- [ ] Part 2: Viewing Documents
+- [x] Part 2: Viewing Documents
   - [x] Constructing a Document Tree
     - [x] HTML parser
     - [x] Handling attributes
@@ -106,7 +106,22 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Cursor
       - [ ] Multiple windows
 - [ ] Part 3: Running Applications
-  - [ ] Sending Information to Servers
+  - [x] Sending Information to Servers
+    - [x] Layout for input and buttons
+    - [x] Click on buttons and type into inputs
+    - [x] Hierarchical focus handling
+    - [x] Submit forms to server
+    - [x] Small server to handle forms
+    - [ ] Exercises (Optional)
+      - [ ] Enter key
+      - [ ] GET forms
+      - [ ] Blurring
+      - [ ] Tab key
+      - [ ] Check boxes
+      - [ ] Resubmit requests
+      - [ ] Message board
+      - [ ] Persistence
+      - [ ] Rich buttons
   - [ ] Running Interactive Scripts
   - [ ] Keeping Data Private
 - [ ] Part 4: Modern Browsers

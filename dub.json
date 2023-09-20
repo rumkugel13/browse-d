@@ -2,6 +2,7 @@
 	"name": "browse-d",
 	"buildOptions-windows": ["debugInfoC"],
 	"dependencies": {
+		"urllibparse": "~>0.1.0",
 		"openssl": "~>3.3.3",
 		"dlangui": "~>0.10.4"
 	},
@@ -9,5 +10,6 @@
 		"openssl": "library-applink"
 	},
 	"libs": ["libcrypto", "libssl"],
-	"versions": ["DeimosOpenSSL_1_1_0"]
+	"versions": ["DeimosOpenSSL_1_1_0"],
+	"excludedSourceFiles": ["source/server.d"]
 }

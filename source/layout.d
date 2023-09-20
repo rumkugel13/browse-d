@@ -9,6 +9,7 @@ import std.array;
 import std.conv : to;
 import node;
 import displaycommand;
+import std.stdio : writeln;
 
 auto BLOCK_ELEMENTS = [
     "html", "body", "article", "section", "nav", "aside",
@@ -67,7 +68,7 @@ class BlockLayout
     int width = 0, height = 0;
     Node node;
     BlockLayout parent, previous;
-    TextLayout previousWord;
+    BlockLayout previousWord;
     BlockLayout[] children;
 
     this(Node node, BlockLayout parent, BlockLayout previous)
@@ -136,6 +137,16 @@ class BlockLayout
 
             return LayoutMode.Inline;
         }
+        else if (typeid(node) == typeid(Element))
+        {
+            auto element = cast(Element) node;
+            if (element && element.tag == "input")
+            {
+                return LayoutMode.Inline;
+            }
+            else
+                return LayoutMode.Block;
+        }
         else
             return LayoutMode.Block;
     }
@@ -156,12 +167,29 @@ class BlockLayout
             {
                 newLine();
             }
-
+            else if (tag.tag == "input" || tag.tag == "button")
+            {
+                input(tag);
+            }
+            else
             foreach (child; tag.children)
             {
                 recurse(child);
             }
         }
+    }
+
+    void input(Node node)
+    {
+        auto w = INPUT_WIDTH_PX;
+        if (cursor_x + w > WIDTH)
+            newLine();
+        auto line = children[$-1];
+        auto input = new InputLayout(node, line, previousWord);
+        line.children ~= input;
+        previousWord = input;
+        auto font = getFont(node);
+        cursor_x += w + font.textSize(" ").x;
     }
 
     void word(Node node, string word)
@@ -200,6 +228,10 @@ class BlockLayout
 
     void paint(ref DisplayList displayList)
     {
+        auto element = cast(Element) node;
+        bool isAtomic = (!(element && (element.tag == "input" || element.tag == "button")));
+
+        if (!isAtomic)
         if ("background-color" in node.style)
         {
             string color = node.style["background-color"];
@@ -340,7 +372,7 @@ class TextLayout : BlockLayout
     string word;
     Font font;
 
-    this(Node node, string word, BlockLayout parent, TextLayout previous)
+    this(Node node, string word, BlockLayout parent, BlockLayout previous)
     {
         this.word = word;
         super(node, parent, previous);
@@ -374,6 +406,90 @@ class TextLayout : BlockLayout
     {
         import std.format;
         return format("TextLayout(x=%s, y=%s, w=%s, h=%s, word=%s, node=%s)", x, y, width, height, word, node);
+    }
+}
+
+auto INPUT_WIDTH_PX = 200;
+
+class InputLayout : TextLayout
+{
+    this(Node node, BlockLayout parent, BlockLayout previous)
+    {
+        super(node, string.init, parent, previous);
+    }
+
+    override void layout()
+    {
+        this.font = getFont(node);
+
+        this.width = INPUT_WIDTH_PX;
+        if (previous)
+        {
+            auto space = (cast(TextLayout)previous).font.textSize(" ").x;
+            this.x = previous.x + space + previous.width;
+        }
+        else 
+        {
+            this.x = parent.x;
+        }
+
+        this.height = this.font.height();
+    }
+
+    override void paint(ref DisplayList displayList)
+    {
+        if ("background-color" in node.style)
+        {
+            string color = node.style["background-color"];
+            auto x2 = this.x + this.width;
+            auto y2 = this.y + this.height;
+            displayList ~= new DrawRect(this.x, this.y, x2, y2, color);
+        }
+
+        string text = "";
+        auto element = cast(Element) node;
+        if (element)
+        {
+            if (element.tag == "input" && "value" in element.attributes)
+            {
+                text = element.attributes["value"];
+            }
+            else 
+            {
+                if (element.children.length == 1)
+                {
+                    auto textNode = cast(Text)element.children[0];
+                    if (textNode)
+                    {
+                        text = textNode.text;
+                    }
+                    else {
+                        writeln("Ignoring HTML contents inside button");
+                        text = "";
+                    }
+                }
+                else 
+                {
+                    writeln("Ignoring HTML contents inside button");
+                        text = "";
+                }
+            }
+        }
+
+        auto color = "color" in node.style ? node.style["color"] : "black";
+        displayList ~= new DrawText(this.x, this.y, text.to!dstring, this.font, color);
+
+        if (node.isFocused)
+        {
+            auto cx = x + font.textSize(text.to!dstring).x;
+            displayList ~= new DrawLine(cx, y, cx, y + height, "black", 1);
+        }
+    }
+
+    override string toString() const
+    {
+        import std.format;
+        return format("InputLayout(x=%s, y=%s, w=%s, h=%s, node=%s)", x, y, width, height, node);
     }
 }
 
