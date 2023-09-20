@@ -228,6 +228,10 @@ void style(Node node, Rule[] rules)
         auto parentPx = parentFontSize[0..$-2].to!float;
         node.style["font-size"] = (nodePct * parentPx).to!string ~ "px";
     }
+    else if (!node.style["font-size"].endsWith("px"))
+    {
+        node.style["font-size"] = "16px";
+    }
 
     foreach (child; node.children)
         style(child, rules);
