@@ -2,8 +2,7 @@ module htmlparser;
 
 import node;
 import std.string : empty, startsWith, split, toLower, replace;
-import std.algorithm : canFind, findSplit, findSplitBefore, findSplitAfter;
-import std.conv : to;
+import std.algorithm : canFind;
 
 auto SELF_CLOSING_TAGS = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",
@@ -124,28 +123,23 @@ class HTMLParser
 
     TagAttribute getAttributes(string text)
     {
-        auto parts = text.findSplit(" "); 
+        auto parts = text.split(); // todo: correctly parse attributes with whitespace in strings
         auto tag = parts[0].toLower();
-        
         string[string] attributes;
-
-        while (parts[2].length > 0)
+        foreach (attrpair; parts[1 .. $])
         {
-            parts = parts[2].findSplit("=");
-            auto key = parts[0];
-            if (parts[2].length > 0)
+            import std.algorithm : findSplit;
+            auto keyAndValue = attrpair.findSplit("=");
+            if (keyAndValue.length > 1)
             {
-                auto value = parts[2];
+                auto value = keyAndValue[2];
                 if (value.length > 2 && value.canFind("'", "\""))
-                {
-                    value = value[1..$].findSplitBefore(value[0].to!string)[0];
-                    parts[2] = parts[2][value.length+2..$].findSplitAfter(" ")[1];
-                }
-                attributes[key.toLower] = value;
+                    value = value[1 .. $ - 1];
+                attributes[keyAndValue[0].toLower()] = value;
             }
             else
             {
-                attributes[key.toLower] = "";
+                attributes[attrpair.toLower()] = "";
             }
         }
         return TagAttribute(tag, attributes);
