@@ -229,7 +229,7 @@ class BlockLayout
     void paint(ref DisplayList displayList)
     {
         auto element = cast(Element) node;
-        bool isAtomic = (!(element && (element.tag == "input" || element.tag == "button")));
+        bool isAtomic = (element && (element.tag == "input" || element.tag == "button"));
 
         if (!isAtomic)
         if ("background-color" in node.style)
