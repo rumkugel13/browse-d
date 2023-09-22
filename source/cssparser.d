@@ -210,6 +210,7 @@ shared static this()
     "font-size": "16px",
     "font-style": "normal",
     "font-weight": "normal",
+    "font-family": "sans-serif",
     "color": "black",
     ];
 }

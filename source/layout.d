@@ -22,12 +22,33 @@ auto BLOCK_ELEMENTS = [
 
 Font[FontKey] FONT_CACHE;
 
-Font getCachedFont(int size, int weight, bool italic)
+Font getCachedFont(int size, int weight, bool italic, string family)
 {
-    auto key = FontKey(size, weight, italic);
+    auto key = FontKey(size, weight, italic, family);
     if (key !in FONT_CACHE)
     {
-        auto font = FontManager.instance.getFont(size, weight, italic, FontFamily.SansSerif, "Arial");
+        FontFamily fontFamily;
+        string fontFace;
+        switch (family)
+        {
+            case "sans-serif":
+                fontFamily = FontFamily.SansSerif;
+                fontFace = "Arial";
+                break;
+            case "serif":
+                fontFamily = FontFamily.Serif;
+                fontFace = "Times New Roman";
+                break;
+            case "monospace":
+                fontFamily = FontFamily.MonoSpace;
+                fontFace = "Courier";
+                break;
+            default:
+                fontFamily = FontFamily.Unspecified;
+                fontFace = "Unspecified";
+                break;
+        }
+        auto font = FontManager.instance.getFont(size, weight, italic, fontFamily, fontFace);
         FONT_CACHE[key] = font;
     }
     return FONT_CACHE[key];
@@ -37,6 +58,7 @@ struct FontKey
 {
     int size, weight;
     bool italic;
+    string family;
 }
 
 struct WordPos
@@ -214,7 +236,8 @@ class BlockLayout
         auto weight = "font-weight" in  node.style && node.style["font-weight"] == "bold" ? FontWeight.Bold : FontWeight.Normal;
         auto style = "font-style" in node.style && node.style["font-style"] == "italic" ? FONT_STYLE_ITALIC.to!bool : FONT_STYLE_NORMAL.to!bool;
         auto size = "font-size" in node.style && node.style["font-size"].length > 2 ? node.style["font-size"][0..$-2].to!float.to!int : 16;
-        return getCachedFont(size, weight, style);
+        auto family = "font-family" in node.style ? node.style["font-family"] : "sans-serif";
+        return getCachedFont(size, weight, style, family);
     }
 
     void newLine()

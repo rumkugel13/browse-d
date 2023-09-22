@@ -79,7 +79,7 @@ Based on [the browser book](https://browser.engineering/)
     - [x] Refactor BlockLayout to move the font properties to CSS
     - [x] Move most tag-specific reasoning to a browser style sheet
     - [ ] Exercises (Optional)
-      - [ ] Fonts (font-family)
+      - [X] Fonts (font-family)
       - [ ] Width/Height
       - [X] Class selectors
       - [ ] Display
