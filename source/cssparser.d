@@ -136,6 +136,35 @@ class CSSParser
         return result;
     }
 
+    Selector[] selectorList()
+    {
+        Selector[] list;
+        auto tag = word().toLower;
+        Selector selector = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
+        whitespace();
+        while (pos < text.length && text[pos] != '{')
+        {
+            if (text[pos] == ',')
+            {
+                list ~= selector;
+                literal(',');
+                whitespace();
+                tag = word().toLower;
+                selector = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
+                whitespace();
+            }
+            else
+            {
+                tag = word().toLower;
+                auto descendant = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
+                selector = new DescendantSelector(selector, descendant);
+                whitespace();
+            }
+        }
+        list ~= selector;
+        return list;
+    }
+
     Rule[] parse()
     {
         Rule[] rules;
@@ -144,12 +173,17 @@ class CSSParser
             try
             {
                 whitespace();
-                auto selector = selector();
+                // auto selector = selector();
+                auto selectorList = selectorList();
                 literal('{');
                 whitespace();
                 auto b = styleBody();
                 literal('}');
-                rules ~= Rule(selector, b);
+                // rules ~= Rule(selector, b);
+                foreach (selector; selectorList)
+                {
+                    rules ~= Rule(selector, b);
+                }
             }
             catch (Exception e)
             {
