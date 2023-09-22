@@ -133,6 +133,16 @@ final class Browser
                     tabs[activeTab].jumpDown();
                     return true;
                 }
+            case KeyCode.PAGEUP:
+                {
+                    tabs[activeTab].pageUp();
+                    return true;
+                }
+            case KeyCode.PAGEDOWN:
+                {
+                    tabs[activeTab].pageDown();
+                    return true;
+                }
             case KeyCode.RETURN:
                 {
                     if (focus == "address bar")

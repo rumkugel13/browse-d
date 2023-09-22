@@ -251,6 +251,17 @@ class Tab
         scroll = max(document.height - (HEIGHT - CHROME_PX), 0);
     }
 
+    void pageUp()
+    {
+        scroll = max(scroll - PAGE_STEP, 0);
+    }
+
+    void pageDown()
+    {
+        auto maxY = max(document.height - (HEIGHT - CHROME_PX), 0);
+        scroll = min(scroll + PAGE_STEP, maxY);
+    }
+
     void goBack()
     {
         if (history.length > 1)
