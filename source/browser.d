@@ -87,7 +87,6 @@ final class Browser
         displayList ~= new DrawOutline(10, 10, 30, 30, "black", 1);
         displayList ~= new DrawText(11, 0, "+", buttonFont, "black");
 
-
         displayList ~= new DrawOutline(40, 50, WIDTH - 10, 90, "black", 1);
         if (focus == "address bar")
         {
@@ -103,8 +102,6 @@ final class Browser
 
         displayList ~= new DrawOutline(10, 50, 35, 90, "black", 1);
         displayList ~= new DrawText(15, 50, "<", buttonFont, "black");
-
-        
 
         return displayList;
     }
@@ -125,6 +122,16 @@ final class Browser
                     tabs[activeTab].scrollUp();
                     return true;
                 }
+            case KeyCode.HOME:
+                {
+                    tabs[activeTab].jumpUp();
+                    return true;
+                }
+            case KeyCode.END:
+                {
+                    tabs[activeTab].jumpDown();
+                    return true;
+                }
             case KeyCode.RETURN:
                 {
                     if (focus == "address bar")
@@ -139,7 +146,8 @@ final class Browser
             }
         }
 
-        if (event.keyCode == KeyCode.BACK && (event.action == KeyAction.KeyDown || event.action == KeyAction.Repeat))
+        if (event.keyCode == KeyCode.BACK && (event.action == KeyAction.KeyDown || event.action == KeyAction
+                .Repeat))
         {
             if (focus == "address bar" && addressBar.length > 0)
             {
@@ -154,8 +162,10 @@ final class Browser
 
         if (event.action == KeyAction.Text || event.action == KeyAction.Repeat)
         {
-            if (event.text.length == 0) return false;
-            if (!(0x20 <= event.text[0] && event.text[0] < 0x7f)) return false;
+            if (event.text.length == 0)
+                return false;
+            if (!(0x20 <= event.text[0] && event.text[0] < 0x7f))
+                return false;
 
             if (focus == "address bar")
             {

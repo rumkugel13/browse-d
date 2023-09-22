@@ -1,7 +1,7 @@
 module tab;
 
 import std.file : readText;
-import std.algorithm : sort;
+import std.algorithm : sort, max, min;
 import std.range : array;
 import std.stdio : writeln;
 import dlangui : DrawBuf, Rect;
@@ -232,15 +232,23 @@ class Tab
 
     void scrollDown()
     {
-        import std.algorithm : max, min;
         auto maxY = max(document.height - (HEIGHT - CHROME_PX), 0);
         scroll = min(scroll + SCROLL_STEP, maxY);
     }
 
     void scrollUp()
     {
-        import std.algorithm : max, min;
         scroll = max(scroll - SCROLL_STEP, 0);
+    }
+
+    void jumpUp()
+    {
+        scroll = 0;
+    }
+
+    void jumpDown()
+    {
+        scroll = max(document.height - (HEIGHT - CHROME_PX), 0);
     }
 
     void goBack()
