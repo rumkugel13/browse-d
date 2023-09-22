@@ -1,6 +1,8 @@
 module selector;
 
 import node;
+import std.string : split;
+import std.algorithm : any;
 
 abstract class Selector
 {
@@ -36,6 +38,32 @@ class TagSelector : Selector
     override string toString() const pure @safe
     {
         return "TagSelector(tag="~tag~")";
+    }
+}
+
+class ClassSelector : Selector
+{
+    string classTag;
+
+    this(string classTag)
+    {
+        this.classTag = classTag[1..$];
+        this.priority = 10;
+    }
+
+    override bool matches(Node node)
+    {
+        auto element = cast(Element)node;
+        if (element && "class" in element.attributes && element.attributes["class"].split().any!(a => a == classTag))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    override string toString() const pure @safe
+    {
+        return "ClassSelector(tag="~classTag~")";
     }
 }
 

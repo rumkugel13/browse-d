@@ -1,7 +1,7 @@
 module cssparser;
 
 import std.ascii : isWhite, isAlphaNum;
-import std.algorithm : canFind, endsWith;
+import std.algorithm : canFind, startsWith, endsWith;
 import std.string : toLower;
 import std.typecons : tuple, Tuple;
 import std.conv : to;
@@ -56,7 +56,7 @@ class CSSParser
         }
 
         if (!(pos > start))
-            throw new Exception("Parsing error, expected a word");
+            throw new Exception("Parsing error, expected a word, got " ~ ((pos < text.length) ? text[pos].to!string : "EOF"));
 
         return text[start..pos];
     }
@@ -64,7 +64,7 @@ class CSSParser
     void literal(char lit)
     {
         if (!(pos < text.length && text[pos] == lit))
-            throw new Exception("Parsing error, expected a literal");
+            throw new Exception("Parsing error, expected a literal " ~ lit ~ " got " ~ ((pos < text.length) ? text[pos].to!string : "EOF"));
         pos++;
     }
 
@@ -123,12 +123,13 @@ class CSSParser
 
     Selector selector()
     {
-        Selector result = new TagSelector(word().toLower);
+        auto tag = word().toLower;
+        Selector result = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
         whitespace();
         while (pos < text.length && text[pos] != '{')
         {
-            auto tag = word();
-            auto descendant = new TagSelector(tag.toLower);
+            tag = word().toLower;
+            auto descendant = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
             result = new DescendantSelector(result, descendant);
             whitespace();
         }

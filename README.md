@@ -81,7 +81,7 @@ Based on [the browser book](https://browser.engineering/)
     - [ ] Exercises (Optional)
       - [ ] Fonts (font-family)
       - [ ] Width/Height
-      - [ ] Class selectors
+      - [X] Class selectors
       - [ ] Display
       - [ ] Shorthand Properties
       - [ ] Fast Descendant Selectors
