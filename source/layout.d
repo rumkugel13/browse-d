@@ -363,7 +363,7 @@ class LineLayout : BlockLayout
     override string toString() const
     {
         import std.format;
-        return format("LineLayout(x=%s, y=%s, w=%s, h=%s, node=%s)", x, y, width, height, node);
+        return format("LineLayout(x=%s, y=%s, w=%s, h=%s)", x, y, width, height);
     }
 }
 
@@ -405,7 +405,7 @@ class TextLayout : BlockLayout
     override string toString() const
     {
         import std.format;
-        return format("TextLayout(x=%s, y=%s, w=%s, h=%s, word=%s, node=%s)", x, y, width, height, word, node);
+        return format("TextLayout(x=%s, y=%s, w=%s, h=%s, word=%s)", x, y, width, height, word);
     }
 }
 
