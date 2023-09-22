@@ -48,7 +48,8 @@ final class Browser
         // buf.fill(Color.white); //background
         buf.clear();
 
-        tabs[activeTab].draw(buf, rc);
+        if (tabs)
+            tabs[activeTab].draw(buf, rc);
 
         foreach (cmd; paintChrome())
         {
@@ -94,8 +95,8 @@ final class Browser
             auto w = buttonFont.textSize(addressBar.to!dstring).x;
             displayList ~= new DrawLine(55 + w, 55, 55 + w, 85, "black", 1);
         }
-        else 
-        {  
+        else if (tabs)
+        {
             auto url = tabs[activeTab].url.toString().to!dstring;
             displayList ~= new DrawText(55, 55, url, buttonFont, "black");
         }
