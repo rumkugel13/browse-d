@@ -162,6 +162,8 @@ string read(Socket socket, size_t bytes, ref char[] buffer, ref size_t available
             line = line[0..bytes];
             return line;
         }
+        else if (line.length == bytes)
+                return line;
     }
 
     while (true)
@@ -169,7 +171,7 @@ string read(Socket socket, size_t bytes, ref char[] buffer, ref size_t available
         auto read = socket.receive(buffer);
         if (read > 0)
         {
-            line ~= buffer;
+            line ~= buffer[0..read];
             if (line.length > bytes)
             {
                 available = line.length - bytes;
@@ -178,6 +180,8 @@ string read(Socket socket, size_t bytes, ref char[] buffer, ref size_t available
                 line = line[0..bytes];
                 return line;
             }
+            else if (line.length == bytes)
+                return line;
         }
         else
         {
@@ -212,7 +216,7 @@ string readLine(Socket socket, ref char[] buffer, ref size_t available)
         auto read = socket.receive(buffer);
         if (read > 0)
         {
-            line ~= buffer;
+            line ~= buffer[0..read];
             auto index = line.indexOf("\r\n");
             if (index != -1)
             {
