@@ -12,9 +12,10 @@ import std.string : split, toLower, strip, indexOf;
 import std.stdio : writeln, write;
 import std.conv : to;
 import std.utf : toUTF8;
+import std.concurrency : spawn;
 import urllibparse : unquotePlus;
 
-auto ENTRIES = ["stromkugel was here"];
+shared auto ENTRIES = ["stromkugel was here"];
 const auto SOCK_BUF = 4 * 1024;
 
 struct ResponseData
@@ -39,12 +40,15 @@ void start()
     while(true)
     {
         auto conn = socket.accept();
-        handleConnection(conn);
+        spawn(&handleConnection, cast(shared)conn);
     }
+    socket.release();
+    socket.close();
 }
 
-void handleConnection(Socket socket)
+void handleConnection(shared Socket s)
 {
+    Socket socket = cast(Socket)s;
     writeln("New Connection: ", socket.remoteAddress);
     char[] readBuffer = new char[SOCK_BUF];
     size_t available = 0;
@@ -197,7 +201,7 @@ string readLine(Socket socket, ref char[] buffer, ref size_t available)
                 return line;
             }
         }
-        
+
         available = socket.receive(buffer);
         if (available <= 0)
             break;
