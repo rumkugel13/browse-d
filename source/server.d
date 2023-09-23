@@ -7,8 +7,8 @@
 module server;
 
 import std.socket;
-import std.algorithm : findSplit, findSplitAfter, canFind;
-import std.string : split, toLower, strip;
+import std.algorithm : canFind;
+import std.string : split, toLower, strip, indexOf;
 import std.stdio : writeln, write;
 import std.conv : to;
 import std.utf : toUTF8;
@@ -65,8 +65,8 @@ void handleConnection(Socket socket)
         if (line == "\r\n")
             break;
 
-        auto find = line.findSplit(":");
-        headers[find[0].toLower] = find[2];
+        auto index = line.indexOf(":");
+        headers[line[0 .. index].toLower] = line[index + 1 .. $];
     }
 
     writeln("Got ", headers.length, " headers");
@@ -123,9 +123,9 @@ string[string] formDecode(string b)
     string[string] params;
     foreach (field; b.split("&"))
     {
-        auto keyAndValue = field.findSplit("=");
-        auto name = keyAndValue[0].unquotePlus;
-        auto value = keyAndValue[2].unquotePlus;
+        auto index = field.indexOf("=");
+        auto name = field[0 .. index].unquotePlus;
+        auto value = field[index + 1 .. $].unquotePlus;
         params[name] = value;
     }
     return params;
@@ -196,13 +196,13 @@ string readLine(Socket socket, ref char[] buffer, ref size_t available)
     {
         line ~= buffer[0..available];
         available = 0;
-        if (canFind(line, "\r\n"))
+        auto index = line.indexOf("\r\n");
+        if (index != -1)
         {
-            auto find = findSplitAfter(line, "\r\n");
-            line = find[0];
-            available = find[1].length;
+            available = line.length - (index + 2);
             for (int i = 0; i < available; i++)
-                buffer[i] = find[1][i];
+                buffer[i] = line[index + 2 + i];
+            line = line[0 .. index + 2];
             return line;
         }
     }
@@ -213,13 +213,13 @@ string readLine(Socket socket, ref char[] buffer, ref size_t available)
         if (read > 0)
         {
             line ~= buffer;
-            if (canFind(line, "\r\n"))
+            auto index = line.indexOf("\r\n");
+            if (index != -1)
             {
-                auto find = findSplitAfter(line, "\r\n");
-                line = find[0];
-                available = find[1].length;
+                available = line.length - (index + 2);
                 for (int i = 0; i < available; i++)
-                    buffer[i] = find[1][i];
+                    buffer[i] = line[index + 2 + i];
+                line = line[0 .. index + 2];
                 return line;
             }
         }
