@@ -104,6 +104,14 @@ final class Browser
         displayList ~= new DrawOutline(10, 50, 35, 90, "black", 1);
         displayList ~= new DrawText(15, 50, "<", buttonFont, "black");
 
+        if (tabs && tabs[activeTab].document.height > HEIGHT)
+        {
+            auto height = ((1f * (HEIGHT - CHROME_PX) / tabs[activeTab].document.height) * (HEIGHT - CHROME_PX)).to!int;
+            auto y = ((1f * tabs[activeTab].scroll / tabs[activeTab].document.height) * (HEIGHT - CHROME_PX)).to!int;
+            displayList ~= new DrawRect(WIDTH - 20, CHROME_PX, WIDTH, HEIGHT, "lightblue");
+            displayList ~= new DrawRect(WIDTH - 20, y + CHROME_PX, WIDTH, y + CHROME_PX + height, "blue");
+        }
+
         return displayList;
     }
 

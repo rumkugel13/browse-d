@@ -68,7 +68,7 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Links bar
       - [ ] Hidden head
       - [ ] Bullets
-      - [ ] Scrollbar
+      - [X] Scrollbar
       - [ ] Table of Contents
       - [ ] Anonymous block boxes
       - [ ] Run-ins
