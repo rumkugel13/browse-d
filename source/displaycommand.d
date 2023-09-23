@@ -1,6 +1,9 @@
 module displaycommand;
 
 import dlangui;
+import std.string : startsWith, join;
+import std.algorithm : map, each;
+import std.conv : to;
 
 alias DisplayList = DisplayCommand[];
 
@@ -32,7 +35,7 @@ class DrawText : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        font.drawText(buf, left, top - scroll, text, decodeCSSColor(color));
+        font.drawText(buf, left, top - scroll, text, getColor(color));
     }
 
     override string toString() const
@@ -64,7 +67,7 @@ class DrawRect : DisplayCommand
     override void execute(int scroll, DrawBuf buf)
     {
         if (color == "lightblue") color = "light_blue";
-        buf.fillRect(Rect(left, top - scroll, right, bottom - scroll), decodeCSSColor(color));
+        buf.fillRect(Rect(left, top - scroll, right, bottom - scroll), getColor(color));
     }
 
     override string toString() const
@@ -91,7 +94,7 @@ class DrawLine : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        buf.drawLineF(PointF(left, top - scroll), PointF(right, bottom - scroll), thickness, decodeCSSColor(color));
+        buf.drawLineF(PointF(left, top - scroll), PointF(right, bottom - scroll), thickness, getColor(color));
     }
 
     override string toString() const
@@ -117,12 +120,29 @@ class DrawOutline : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        buf.drawFrame(Rect(left, top - scroll, right, bottom - scroll), decodeCSSColor(color), Rect(thickness, thickness, thickness, thickness), COLOR_TRANSPARENT);
+        buf.drawFrame(Rect(left, top - scroll, right, bottom - scroll), getColor(color), Rect(thickness, thickness, thickness, thickness), COLOR_TRANSPARENT);
     }
 
     override string toString() const
     {
         import std.format;
         return format("DrawOutline(top=%s, left=%s, bottom=%s, right=%s, color=%s, thickness=%s)", top, left, bottom, right, color, thickness);
+    }
+}
+
+uint getColor(string color)
+{
+    if (color.startsWith("#"))
+    {
+        if (color.length == 4)
+        {
+            color = "#" ~ color[1..$].map!(a => [a,a]).join.to!string;
+        }
+
+        return decodeHexColor(color);
+    }
+    else 
+    {
+        return decodeCSSColor(color);
     }
 }
