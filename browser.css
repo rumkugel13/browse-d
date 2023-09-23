@@ -6,6 +6,7 @@ i { font-style: italic; }
 b { font-weight: bold; }
 small { font-size: 90%; }
 big { font-size: 110%; }
+em { font-style: italic; }
 
 input {
     font-size: 16px; font-weight: normal; font-style: normal;
