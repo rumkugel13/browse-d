@@ -149,29 +149,12 @@ string read(Socket socket, size_t bytes, ref char[] buffer, ref size_t available
 {
     string line = "";
 
-    if (available > 0)
-    {
-        line ~= buffer[0..available];
-        available = 0;
-
-        if (line.length > bytes)
-        {
-            available = line.length - bytes;
-            for (int i = 0; i < available; i++)
-                buffer[i] = line[bytes + i];
-            line = line[0..bytes];
-            return line;
-        }
-        else if (line.length == bytes)
-                return line;
-    }
-
     while (true)
     {
-        auto read = socket.receive(buffer);
-        if (read > 0)
+        if (available > 0)
         {
-            line ~= buffer[0..read];
+            line ~= buffer[0..available];
+            available = 0;
             if (line.length > bytes)
             {
                 available = line.length - bytes;
@@ -183,7 +166,9 @@ string read(Socket socket, size_t bytes, ref char[] buffer, ref size_t available
             else if (line.length == bytes)
                 return line;
         }
-        else
+        
+        available = socket.receive(buffer);
+        if (available <= 0)
         {
             break;
         }
@@ -196,27 +181,12 @@ string readLine(Socket socket, ref char[] buffer, ref size_t available)
 {
     string line = "";
 
-    if (available > 0)
-    {
-        line ~= buffer[0..available];
-        available = 0;
-        auto index = line.indexOf("\r\n");
-        if (index != -1)
-        {
-            available = line.length - (index + 2);
-            for (int i = 0; i < available; i++)
-                buffer[i] = line[index + 2 + i];
-            line = line[0 .. index + 2];
-            return line;
-        }
-    }
-
     while (true)
     {
-        auto read = socket.receive(buffer);
-        if (read > 0)
+        if (available > 0)
         {
-            line ~= buffer[0..read];
+            line ~= buffer[0..available];
+            available = 0;
             auto index = line.indexOf("\r\n");
             if (index != -1)
             {
@@ -227,10 +197,10 @@ string readLine(Socket socket, ref char[] buffer, ref size_t available)
                 return line;
             }
         }
-        else
-        {
+        
+        available = socket.receive(buffer);
+        if (available <= 0)
             break;
-        }
     }
 
     return line;
