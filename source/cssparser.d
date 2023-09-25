@@ -67,13 +67,21 @@ class CSSParser
         pos++;
     }
 
-    KeyValuePair pair()
+    string untilChar(char[] chars)
+    {
+        auto start = this.pos;
+        while(pos < text.length && !chars.canFind(text[pos]))
+            pos++;
+        return text[start..pos];
+    }
+
+    KeyValuePair pair(char[] until)
     {
         auto prop = word();
         whitespace();
         literal(':');
         whitespace();
-        auto val = word();
+        auto val = untilChar(until);
         return KeyValuePair(prop.toLower, val);
     }
 
@@ -84,7 +92,7 @@ class CSSParser
         {
             try
             {
-                auto propVal = pair();
+                auto propVal = pair([';','}']);
                 pairs[propVal.key.toLower] = propVal.value;
                 whitespace();
                 literal(';');
@@ -179,13 +187,11 @@ class CSSParser
             try
             {
                 whitespace();
-                // auto selector = selector();
                 auto selectorList = selectorList();
                 literal('{');
                 whitespace();
                 auto b = styleBody();
                 literal('}');
-                // rules ~= Rule(selector, b);
                 foreach (selector; selectorList)
                 {
                     rules ~= Rule(selector, b);
