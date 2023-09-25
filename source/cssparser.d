@@ -121,26 +121,16 @@ class CSSParser
         return '\0';
     }
 
-    Selector selector()
+    Selector simpleSelector()
     {
         auto tag = word().toLower;
-        Selector result = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
-        whitespace();
-        while (pos < text.length && text[pos] != '{')
-        {
-            tag = word().toLower;
-            auto descendant = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
-            result = new DescendantSelector(result, descendant);
-            whitespace();
-        }
-        return result;
+        return tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
     }
 
     Selector[] selectorList()
     {
         Selector[] list;
-        auto tag = word().toLower;
-        Selector selector = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
+        Selector selector = simpleSelector();
         whitespace();
         while (pos < text.length && text[pos] != '{')
         {
@@ -149,14 +139,12 @@ class CSSParser
                 list ~= selector;
                 literal(',');
                 whitespace();
-                tag = word().toLower;
-                selector = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
+                selector = simpleSelector();
                 whitespace();
             }
             else
             {
-                tag = word().toLower;
-                auto descendant = tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
+                auto descendant = simpleSelector();
                 selector = new DescendantSelector(selector, descendant);
                 whitespace();
             }
