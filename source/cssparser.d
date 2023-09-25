@@ -55,7 +55,8 @@ class CSSParser
         }
 
         if (!(pos > start))
-            throw new Exception("Parsing error, expected a word, got " ~ ((pos < text.length) ? text[pos].to!string : "EOF"));
+            throw new Exception("Parsing error, expected a word, got " ~ ((pos < text.length) ? text[pos].to!string
+                    : "EOF"));
 
         return text[start..pos];
     }
@@ -63,7 +64,8 @@ class CSSParser
     void literal(char lit)
     {
         if (!(pos < text.length && text[pos] == lit))
-            throw new Exception("Parsing error, expected a literal " ~ lit ~ " got " ~ ((pos < text.length) ? text[pos].to!string : "EOF"));
+            throw new Exception("Parsing error, expected a literal " ~ lit ~ " got " ~ (
+                    (pos < text.length) ? text[pos].to!string : "EOF"));
         pos++;
     }
 

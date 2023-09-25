@@ -217,9 +217,13 @@ class BlockLayout
 
     Font getFont(Node node)
     {
-        auto weight = "font-weight" in  node.style && node.style["font-weight"] == "bold" ? FontWeight.Bold : FontWeight.Normal;
-        auto style = "font-style" in node.style && node.style["font-style"] == "italic" ? FONT_STYLE_ITALIC.to!bool : FONT_STYLE_NORMAL.to!bool;
-        auto size = "font-size" in node.style && node.style["font-size"].length > 2 ? node.style["font-size"][0..$-2].to!float.to!int : 16;
+        auto weight = "font-weight" in node.style && node.style["font-weight"] == "bold" ? FontWeight.Bold
+            : FontWeight.Normal;
+        auto style = "font-style" in node.style && node.style["font-style"] == "italic" ? FONT_STYLE_ITALIC
+            .to!bool : FONT_STYLE_NORMAL.to!bool;
+        auto size = "font-size" in node.style && node.style["font-size"].length > 2 ? node
+            .style["font-size"][0 .. $ - 2].to!float
+            .to!int : 16;
         auto family = "font-family" in node.style ? node.style["font-family"] : "sans-serif";
         return getCachedFont(size, weight, style, family);
     }
