@@ -61,22 +61,6 @@ struct FontKey
     string family;
 }
 
-struct WordPos
-{
-    int x;
-    dstring s;
-    Font f;
-    string color;
-}
-
-struct TextPos
-{
-    int x, y;
-    dstring s;
-    Font f;
-    string color;
-}
-
 enum LayoutMode
 {
     Inline,
