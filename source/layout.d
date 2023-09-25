@@ -342,6 +342,22 @@ class LineLayout : BlockLayout
             return;
         }
 
+        auto el = cast(Element) node;
+        if (el && "text-align" in el.style && el.style["text-align"] != "left")
+        {
+            auto childrenWidth = (children[$-1].x + children[$-1].width) - children[0].x;
+            auto adjust = 0;
+            if (el.style["text-align"] == "center")
+                adjust = (this.width - childrenWidth) / 2;
+            else if (el.style["text-align"] == "right")
+                adjust = (this.width - childrenWidth);
+            
+            foreach(child;children)
+            {
+                child.x += adjust;
+            }
+        }
+
         auto heights = children.map!((w) => (cast(TextLayout)w).font.height()).array;
         auto baselines = children.map!((w) => (cast(TextLayout)w).font.baseline()).array;
 

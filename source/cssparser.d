@@ -212,6 +212,7 @@ shared static this()
     "font-weight": "normal",
     "font-family": "sans-serif",
     "color": "black",
+    "text-align": "left"
     ];
 }
 
