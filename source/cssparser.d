@@ -217,7 +217,7 @@ class CSSParser
     }
 }
 
-immutable string[string] INHERITED_PROPERTIES;
+string[string] INHERITED_PROPERTIES;
 shared static this() 
 {
     INHERITED_PROPERTIES = [

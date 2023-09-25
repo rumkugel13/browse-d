@@ -26,10 +26,12 @@ class Tab
     URL[] history;
     StopWatch sw;
     Element focus;
+    bool darkMode;
 
-    this()
+    this(bool darkMode = false)
     {
         defaultStyleSheet = new CSSParser(readText("browser.css")).parse();
+        this.darkMode = darkMode;
     }
 
     void load(URL url, string body)
@@ -94,9 +96,13 @@ class Tab
 
     void render()
     {
-        cssparser.style(tree, rules.sort.array);
-        // foreach (rule; rules)
-        //     writeln(rule);
+        if (darkMode)
+            INHERITED_PROPERTIES["color"] = "white";
+        else
+            INHERITED_PROPERTIES["color"] = "black";
+        style(tree, rules.sort.array);
+        foreach (rule; rules)
+            writeln(rule);
         document = new DocumentLayout(tree);
         document.layout();
         // document.printTree();
@@ -271,5 +277,11 @@ class Tab
             history.length--;
             load(back, string.init); // note: load adds the url back to history
         }
+    }
+
+    void toggleDarkMode()
+    {
+        darkMode = !darkMode;
+        render();
     }
 }

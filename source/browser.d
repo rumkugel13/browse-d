@@ -16,6 +16,7 @@ final class Browser
     ulong activeTab;
     string focus;
     string addressBar;
+    bool darkMode;
 
     this()
     {
@@ -37,7 +38,7 @@ final class Browser
 
     void load(URL url)
     {
-        auto newTab = new Tab();
+        auto newTab = new Tab(darkMode);
         newTab.load(url, string.init);
         activeTab = tabs.length;
         tabs ~= newTab;
@@ -45,8 +46,10 @@ final class Browser
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
     {
-        // buf.fill(Color.white); //background
-        buf.clear();
+        if (!darkMode)
+            buf.fill(Color.white); //background
+        else
+            buf.fill(Color.black);
 
         if (tabs)
             tabs[activeTab].draw(buf, rc);
@@ -61,9 +64,16 @@ final class Browser
 
     DisplayList paintChrome()
     {
+        string color = "black", backColor = "white";
+        if (darkMode)
+        {
+            color = "white";
+            backColor = "black";
+        }
+
         DisplayList displayList;
-        displayList ~= new DrawRect(0, 0, WIDTH, CHROME_PX, "white");
-        displayList ~= new DrawLine(0, CHROME_PX - 1, WIDTH, CHROME_PX - 1, "black", 1);
+        displayList ~= new DrawRect(0, 0, WIDTH, CHROME_PX, backColor);
+        displayList ~= new DrawLine(0, CHROME_PX - 1, WIDTH, CHROME_PX - 1, color, 1);
 
         auto tabFont = FontManager.instance.getFont(20, FontWeight.Normal, false, FontFamily.SansSerif, "Arial");
         foreach (i, tab; tabs)
@@ -73,36 +83,36 @@ final class Browser
             int x1 = 40 + 80 * tabNum;
             int x2 = 120 + 80 * tabNum;
 
-            displayList ~= new DrawLine(x1, 0, x1, 40, "black", 1);
-            displayList ~= new DrawLine(x2, 0, x2, 40, "black", 1);
-            displayList ~= new DrawText(x1 + 10, 10, name, tabFont, "black");
+            displayList ~= new DrawLine(x1, 0, x1, 40, color, 1);
+            displayList ~= new DrawLine(x2, 0, x2, 40, color, 1);
+            displayList ~= new DrawText(x1 + 10, 10, name, tabFont, color);
 
             if (i == activeTab)
             {
-                displayList ~= new DrawLine(0, 40, x1, 40, "black", 1);
-                displayList ~= new DrawLine(x2, 40, WIDTH, 40, "black", 1);
+                displayList ~= new DrawLine(0, 40, x1, 40, color, 1);
+                displayList ~= new DrawLine(x2, 40, WIDTH, 40, color, 1);
             }
         }
 
         auto buttonFont = FontManager.instance.getFont(30, FontWeight.Normal, false, FontFamily.SansSerif, "Arial");
-        displayList ~= new DrawOutline(10, 10, 30, 30, "black", 1);
-        displayList ~= new DrawText(11, 0, "+", buttonFont, "black");
+        displayList ~= new DrawOutline(10, 10, 30, 30, color, 1);
+        displayList ~= new DrawText(11, 0, "+", buttonFont, color);
 
-        displayList ~= new DrawOutline(40, 50, WIDTH - 10, 90, "black", 1);
+        displayList ~= new DrawOutline(40, 50, WIDTH - 10, 90, color, 1);
         if (focus == "address bar")
         {
-            displayList ~= new DrawText(55, 55, addressBar.to!dstring, buttonFont, "black");
+            displayList ~= new DrawText(55, 55, addressBar.to!dstring, buttonFont, color);
             auto w = buttonFont.textSize(addressBar.to!dstring).x;
-            displayList ~= new DrawLine(55 + w, 55, 55 + w, 85, "black", 1);
+            displayList ~= new DrawLine(55 + w, 55, 55 + w, 85, color, 1);
         }
         else if (tabs)
         {
             auto url = tabs[activeTab].url.toString().to!dstring;
-            displayList ~= new DrawText(55, 55, url, buttonFont, "black");
+            displayList ~= new DrawText(55, 55, url, buttonFont, color);
         }
 
-        displayList ~= new DrawOutline(10, 50, 35, 90, "black", 1);
-        displayList ~= new DrawText(15, 50, "<", buttonFont, "black");
+        displayList ~= new DrawOutline(10, 50, 35, 90, color, 1);
+        displayList ~= new DrawText(15, 50, "<", buttonFont, color);
 
         if (tabs && tabs[activeTab].document.height > HEIGHT)
         {
@@ -158,6 +168,11 @@ final class Browser
                         tabs[activeTab].load(new URL(addressBar), string.init);
                         focus = "";
                     }
+                    return true;
+                }
+            case KeyCode.F8:
+                {
+                    toggleDarkMode();
                     return true;
                 }
             default:
@@ -238,5 +253,13 @@ final class Browser
         }
 
         return false;
+    }
+
+    void toggleDarkMode()
+    {
+        darkMode = !darkMode;
+        // tabs[activeTab].toggleDarkMode();
+        foreach (tab; tabs)
+            tab.toggleDarkMode();
     }
 }
