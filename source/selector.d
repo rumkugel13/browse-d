@@ -1,7 +1,7 @@
 module selector;
 
 import node;
-import std.string : split;
+import std.string : split, format;
 import std.algorithm : any, map, sum;
 import std.conv : to;
 
@@ -32,13 +32,13 @@ class TagSelector : Selector
 
     override bool matches(Node node)
     {
-        auto element = cast(Element)node;
+        auto element = cast(Element) node;
         return element !is null && this.tag == element.tag;
     }
 
     override string toString() const pure @safe
     {
-        return "TagSelector(tag="~tag~")";
+        return format("TagSelector(tag=%s, priority=%s)", tag, priority);
     }
 }
 
@@ -48,14 +48,15 @@ class ClassSelector : Selector
 
     this(string classTag)
     {
-        this.classTag = classTag[1..$];
+        this.classTag = classTag[1 .. $];
         this.priority = 10;
     }
 
     override bool matches(Node node)
     {
-        auto element = cast(Element)node;
-        if (element && "class" in element.attributes && element.attributes["class"].split().any!(a => a == classTag))
+        auto element = cast(Element) node;
+        if (element && "class" in element.attributes && element.attributes["class"].split()
+            .any!(a => a == classTag))
         {
             return true;
         }
@@ -64,11 +65,11 @@ class ClassSelector : Selector
 
     override string toString() const pure @safe
     {
-        return "ClassSelector(tag="~classTag~")";
+        return format("ClassSelector(class=%s, priority=%s)", classTag, priority);
     }
 }
 
-class DescendantSelector : Selector 
+class DescendantSelector : Selector
 {
     Selector ancestor, descendant;
 
@@ -81,10 +82,12 @@ class DescendantSelector : Selector
 
     override bool matches(Node node)
     {
-        if (!descendant.matches(node)) return false;
+        if (!descendant.matches(node))
+            return false;
         while (node.parent)
         {
-            if (ancestor.matches(node.parent)) return true;
+            if (ancestor.matches(node.parent))
+                return true;
             node = node.parent;
         }
         return false;
@@ -92,7 +95,7 @@ class DescendantSelector : Selector
 
     override string toString() const pure @safe
     {
-        return "DescendantSelector(ancestor=" ~ancestor.toString~", descendant="~descendant.toString~")";
+        return format("DescendantSelector(ancestor=%s, descendant=%s, priority=%s)", ancestor, descendant, priority);
     }
 }
 
@@ -122,8 +125,8 @@ class SelectorSequence : Selector
         string result = "SelectorSequence(";
         foreach (i, sel; sequence)
         {
-            result ~= "[" ~ i.to!string ~ "]=" ~ sel.toString() ~ " ";
+            result ~= "[" ~ i.to!string ~ "]=" ~ sel.toString() ~ ", ";
         }
-        return result ~ ")";
+        return result ~ "priority=" ~ priority.to!string ~ ")";
     }
 }
