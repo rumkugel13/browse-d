@@ -85,7 +85,7 @@ Based on [the browser book](https://browser.engineering/)
       - [ ] Display
       - [ ] Shorthand Properties
       - [ ] Fast Descendant Selectors
-      - [ ] Selector Sequences
+      - [X] Selector Sequences
       - [ ] Important
       - [ ] Ancestor Selectors
       - [ ] Inline Style Sheets

@@ -2,7 +2,7 @@ module cssparser;
 
 import std.ascii : isWhite, isAlphaNum;
 import std.algorithm : canFind, startsWith, endsWith;
-import std.string : toLower;
+import std.string : toLower, indexOf;
 import std.typecons : tuple, Tuple;
 import std.conv : to;
 import node;
@@ -10,7 +10,6 @@ import selector;
 
 alias KeyValuePair = Tuple!(string, "key", string, "value");
 alias Body = string[string];
-// alias Rule = Tuple!(Selector, "selector", Body, "body");
 
 struct Rule
 {
@@ -124,6 +123,25 @@ class CSSParser
     Selector simpleSelector()
     {
         auto tag = word().toLower;
+        if (tag[1..$].canFind("."))
+        {
+            Selector[] sequence;
+            auto idx = tag.indexOf(".", 1);
+            auto first = tag[0..idx];
+            sequence ~= first.startsWith(".") ? new ClassSelector(first) : new TagSelector(first);
+            while (idx != -1)
+            {
+                auto baseIdx = idx;
+                idx = tag.indexOf(".", idx + 1);
+                auto next = string.init;
+                if (idx != -1)
+                    next = tag[baseIdx..idx];
+                else
+                    next = tag[baseIdx..$];
+                sequence ~= new ClassSelector(next);
+            }
+            return new SelectorSequence(sequence);
+        }
         return tag.startsWith(".") ? new ClassSelector(tag) : new TagSelector(tag);
     }
 

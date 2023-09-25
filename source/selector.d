@@ -2,7 +2,8 @@ module selector;
 
 import node;
 import std.string : split;
-import std.algorithm : any;
+import std.algorithm : any, map, sum;
+import std.conv : to;
 
 abstract class Selector
 {
@@ -92,5 +93,37 @@ class DescendantSelector : Selector
     override string toString() const pure @safe
     {
         return "DescendantSelector(ancestor=" ~ancestor.toString~", descendant="~descendant.toString~")";
+    }
+}
+
+class SelectorSequence : Selector
+{
+    Selector[] sequence;
+
+    this(Selector[] sequence)
+    {
+        this.sequence = sequence;
+        this.priority = sequence.map!(s => s.priority).sum;
+    }
+
+    override bool matches(Node node)
+    {
+        foreach (selector; sequence)
+        {
+            if (!selector.matches(node))
+                return false;
+        }
+
+        return true;
+    }
+
+    override string toString() const pure @safe
+    {
+        string result = "SelectorSequence(";
+        foreach (i, sel; sequence)
+        {
+            result ~= "[" ~ i.to!string ~ "]=" ~ sel.toString() ~ " ";
+        }
+        return result ~ ")";
     }
 }
