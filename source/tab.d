@@ -96,13 +96,15 @@ class Tab
 
     void render()
     {
+        foreach (rule; rules)
+            writeln(rule);
         if (darkMode)
             INHERITED_PROPERTIES["color"] = "white";
         else
             INHERITED_PROPERTIES["color"] = "black";
-        style(tree, rules.sort.array);
-        foreach (rule; rules)
-            writeln(rule);
+        style(tree, rules.sort.array, darkMode);
+        // foreach (rule; rules)
+        //     writeln(rule);
         document = new DocumentLayout(tree);
         document.layout();
         // document.printTree();

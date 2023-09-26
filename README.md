@@ -129,5 +129,6 @@ Based on [the browser book](https://browser.engineering/)
   - [ ] Scheduling Tasks and Threads
   - [ ] Animating and Compositing
   - [ ] Making Content Accessible
+    - [X] Dark mode
   - [ ] Supporting Embedded Content
   - [ ] Reusing Previous Computation

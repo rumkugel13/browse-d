@@ -13,6 +13,7 @@ alias Body = string[string];
 
 struct Rule
 {
+    string media;
     Selector selector;
     Body body;
 
@@ -84,6 +85,16 @@ class CSSParser
         literal(':');
         whitespace();
         auto val = untilChar(until);
+        return KeyValuePair(prop.toLower, val);
+    }
+
+    KeyValuePair pair()
+    {
+        auto prop = word();
+        whitespace();
+        literal(':');
+        whitespace();
+        auto val = word();
         return KeyValuePair(prop.toLower, val);
     }
 
@@ -181,22 +192,58 @@ class CSSParser
         return list;
     }
 
+    KeyValuePair mediaQuery()
+    {
+        literal('@');
+        if (word() != "media")
+            throw new Exception("Unsupported media query");
+        // assert(word() == "media");
+        whitespace();
+        literal('(');
+        auto pair = pair();
+        whitespace();
+        literal(')');
+        return pair;
+    }
+
     Rule[] parse()
     {
         Rule[] rules;
+        auto media = string.init;
+        whitespace();
         while (pos < text.length)
         {
             try
             {
-                whitespace();
-                auto selectorList = selectorList();
-                literal('{');
-                whitespace();
-                auto b = styleBody();
-                literal('}');
-                foreach (selector; selectorList)
+                if (text[pos] == '@' && media == string.init)
                 {
-                    rules ~= Rule(selector, b);
+                    auto propVal = mediaQuery();
+                    if (propVal.key == "prefers-color-scheme" && ["dark", "light"].canFind(propVal.value))
+                    {
+                        media = propVal.value;
+                    }
+                    whitespace();
+                    literal('{');
+                    whitespace();
+                }
+                else if(text[pos] == '}' && media != string.init)
+                {
+                    literal('}');
+                    media = string.init;
+                    whitespace();
+                }
+                else
+                {
+                    auto selectorList = selectorList();
+                    literal('{');
+                    whitespace();
+                    auto b = styleBody();
+                    literal('}');
+                    whitespace();
+                    foreach (selector; selectorList)
+                    {
+                        rules ~= Rule(media, selector, b);
+                    }
                 }
             }
             catch (Exception e)
@@ -230,7 +277,7 @@ shared static this()
     ];
 }
 
-void style(Node node, Rule[] rules)
+void style(Node node, Rule[] rules, bool darkMode = false)
 {
     node.style.clear;
 
@@ -248,7 +295,13 @@ void style(Node node, Rule[] rules)
 
     foreach (rule; rules)
     {
-        if (!rule.selector.matches(node)) continue;
+        if (rule.media != string.init)
+        {
+            if ((rule.media == "dark") != darkMode)
+                continue;
+        }
+        if (!rule.selector.matches(node))
+            continue;
         foreach (prop, b; rule.body)
         {
             node.style[prop] = b;
