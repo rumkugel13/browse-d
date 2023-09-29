@@ -133,41 +133,37 @@ final class Browser
             {
             case KeyCode.DOWN:
                 {
-                    tabs[activeTab].scrollDown();
+                    handleDown();
                     return true;
                 }
             case KeyCode.UP:
                 {
-                    tabs[activeTab].scrollUp();
+                    handleUp();
                     return true;
                 }
             case KeyCode.HOME:
                 {
-                    tabs[activeTab].jumpUp();
+                    handleHome();
                     return true;
                 }
             case KeyCode.END:
                 {
-                    tabs[activeTab].jumpDown();
+                    handleEnd();
                     return true;
                 }
             case KeyCode.PAGEUP:
                 {
-                    tabs[activeTab].pageUp();
+                    handlePageUp();
                     return true;
                 }
             case KeyCode.PAGEDOWN:
                 {
-                    tabs[activeTab].pageDown();
+                    handlePageDown();
                     return true;
                 }
             case KeyCode.RETURN:
                 {
-                    if (focus == "address bar")
-                    {
-                        tabs[activeTab].load(new URL(addressBar), string.init);
-                        focus = "";
-                    }
+                    handleEnter();
                     return true;
                 }
             case KeyCode.F8:
@@ -183,33 +179,13 @@ final class Browser
         if (event.keyCode == KeyCode.BACK && (event.action == KeyAction.KeyDown || event.action == KeyAction
                 .Repeat))
         {
-            if (focus == "address bar" && addressBar.length > 0)
-            {
-                addressBar.length--;
-            }
-            else if (focus == "content")
-            {
-                tabs[activeTab].backspace();
-            }
+            handleBack();
             return true;
         }
 
         if (event.action == KeyAction.Text || event.action == KeyAction.Repeat)
         {
-            if (event.text.length == 0)
-                return false;
-            if (!(0x20 <= event.text[0] && event.text[0] < 0x7f))
-                return false;
-
-            if (focus == "address bar")
-            {
-                addressBar ~= event.text.to!string;
-            }
-            else if (focus == "content")
-            {
-                tabs[activeTab].keyPress(event.text.to!string);
-            }
-
+            handleInput(event.text.to!string);
             return true;
         }
 
@@ -221,38 +197,111 @@ final class Browser
         if (event.action == MouseAction.Wheel)
         {
             if (event.wheelDelta < 0)
-                tabs[activeTab].scrollDown();
+                handleDown();
             else
-                tabs[activeTab].scrollUp();
+                handleUp();
 
             return true;
         }
         else if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left)
         {
-            focus = "";
-            if (event.y < CHROME_PX)
-            {
-                if (40 <= event.x && event.x < 40 + 80 * tabs.length && 0 <= event.y && event.y < 40)
-                    activeTab = (event.x - 40) / 80;
-                else if (10 <= event.x && event.x < 30 && 10 <= event.y && event.y < 30)
-                    load(new URL("https://browser.engineering/"));
-                else if (10 <= event.x && event.x < 35 && 50 <= event.y && event.y < 90)
-                    tabs[activeTab].goBack();
-                else if (50 <= event.x && event.x < WIDTH - 10 && 50 <= event.y && event.y < 90)
-                {
-                    focus = "address bar";
-                    addressBar = "";
-                }
-            }
-            else
-            {
-                focus = "content";
-                tabs[activeTab].click(event.x, event.y - CHROME_PX);
-            }
+            handleLeftClick(event.x, event.y);
             return true;
         }
 
         return false;
+    }
+
+    void handleDown()
+    {
+        tabs[activeTab].scrollDown();
+    }
+
+    void handleUp()
+    {
+        tabs[activeTab].scrollUp();
+    }
+
+    void handlePageDown()
+    {
+        tabs[activeTab].pageDown();
+    }
+
+    void handlePageUp()
+    {
+        tabs[activeTab].pageUp();
+    }
+
+    void handleHome()
+    {
+        tabs[activeTab].jumpUp();
+    }
+
+    void handleEnd()
+    {
+        tabs[activeTab].jumpDown();
+    }
+
+    void handleEnter()
+    {
+        if (focus == "address bar")
+        {
+            tabs[activeTab].load(new URL(addressBar), string.init);
+            focus = "";
+        }
+    }
+
+    void handleInput(string text)
+    {
+        if (text.length == 0)
+                return;
+        if (!(0x20 <= text[0] && text[0] < 0x7f))
+            return;
+
+        if (focus == "address bar")
+        {
+            addressBar ~= text;
+        }
+        else if (focus == "content")
+        {
+            tabs[activeTab].keyPress(text.to!string);
+        }
+    }
+
+    void handleBack()
+    {
+        if (focus == "address bar" && addressBar.length > 0)
+        {
+            addressBar.length--;
+        }
+        else if (focus == "content")
+        {
+            tabs[activeTab].backspace();
+        }
+    }
+
+    void handleLeftClick(int x, int y)
+    {
+        focus = "";
+        if (y < CHROME_PX)
+        {
+            if (40 <= x && x < 40 + 80 * tabs.length && 0 <= y && y < 40)
+                activeTab = (x - 40) / 80;
+            else if (10 <= x && x < 30 && 10 <= y && y < 30)
+                load(new URL("https://browser.engineering/"));
+            else if (10 <= x && x < 35 && 50 <= y && y < 90)
+                tabs[activeTab].goBack();
+            else if (50 <= x && x < WIDTH - 10 && 50 <= y && y < 90)
+            {
+                focus = "address bar";
+                addressBar = "";
+            }
+        }
+        else
+        {
+            focus = "content";
+            tabs[activeTab].click(x, y - CHROME_PX);
+        }
     }
 
     void toggleDarkMode()

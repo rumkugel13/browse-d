@@ -22,9 +22,9 @@ auto BLOCK_ELEMENTS = [
 
 Font[FontKey] FONT_CACHE;
 
-Font getCachedFont(int size, int weight, bool italic, string family)
+Font getCachedFont(int size, string weight, string slant, string family)
 {
-    auto key = FontKey(size, weight, italic, family);
+    auto key = FontKey(size, weight, slant, family);
     if (key !in FONT_CACHE)
     {
         FontFamily fontFamily;
@@ -48,7 +48,9 @@ Font getCachedFont(int size, int weight, bool italic, string family)
                 fontFace = "Unspecified";
                 break;
         }
-        auto font = FontManager.instance.getFont(size, weight, italic, fontFamily, fontFace);
+        FontWeight fontWeight = weight == "bold" ? FontWeight.Bold : FontWeight.Normal;
+        auto italic = slant == "italic";
+        auto font = FontManager.instance.getFont(size, fontWeight, italic, fontFamily, fontFace);
         FONT_CACHE[key] = font;
     }
     return FONT_CACHE[key];
@@ -56,8 +58,9 @@ Font getCachedFont(int size, int weight, bool italic, string family)
 
 struct FontKey
 {
-    int size, weight;
-    bool italic;
+    int size;
+    string weight;
+    string slant;
     string family;
 }
 
@@ -217,10 +220,8 @@ class BlockLayout
 
     Font getFont(Node node)
     {
-        auto weight = "font-weight" in node.style && node.style["font-weight"] == "bold" ? FontWeight.Bold
-            : FontWeight.Normal;
-        auto style = "font-style" in node.style && node.style["font-style"] == "italic" ? FONT_STYLE_ITALIC
-            .to!bool : FONT_STYLE_NORMAL.to!bool;
+        auto weight = "font-weight" in node.style ? node.style["font-weight"] : "normal";
+        auto style = "font-style" in node.style ? node.style["font-style"] : "normal";
         auto size = "font-size" in node.style && node.style["font-size"].length > 2 ? node
             .style["font-size"][0 .. $ - 2].to!float
             .to!int : 16;
