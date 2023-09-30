@@ -427,7 +427,7 @@ class TextLayout : BlockLayout
     override void paint(ref DisplayList displayList)
     {
         auto color = "color" in node.style ? node.style["color"] : "black";
-        displayList ~= new DrawText(this.x, this.y, this.word.to!dstring, this.font, color);
+        displayList ~= new DrawText(this.x, this.y, this.word, this.font, color);
     }
 
     override string toString() const
@@ -505,7 +505,7 @@ class InputLayout : TextLayout
         }
 
         auto color = "color" in node.style ? node.style["color"] : "black";
-        displayList ~= new DrawText(this.x, this.y, text.to!dstring, this.font, color);
+        displayList ~= new DrawText(this.x, this.y, text, this.font, color);
 
         if (node.isFocused)
         {

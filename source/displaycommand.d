@@ -17,17 +17,18 @@ abstract class DisplayCommand
 
 class DrawText : DisplayCommand
 {
-    dstring text;
+    string text;
     Font font;
     string fontString;
     string color;
 
-    this(int x1, int y1, dstring text, Font font, string color)
+    this(int x1, int y1, string text, Font font, string color)
     {
         top = y1;
         left = x1;
         this.text = text;
         this.font = font;
+        right = x1 + font.textSize(text.to!dstring).x;
         bottom = y1 + font.height();
         fontString = getFontDetails();
         this.color = color;
@@ -35,19 +36,23 @@ class DrawText : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        font.drawText(buf, left, top - scroll, text, getColor(color));
+        font.drawText(buf, left, top - scroll, text.to!dstring, getColor(color));
     }
 
     override string toString() const
     {
         import std.format;
-        return format("DrawText(top=%s, left=%s, bottom=%s, right=%s, text=%s, color=%s, font=%s)", top, left, bottom, right, text, color, fontString);
+
+        return format("DrawText(top=%s, left=%s, bottom=%s, right=%s, text=%s, color=%s, font=%s)", top, left, bottom,
+            right, text, color, fontString);
     }
 
     string getFontDetails()
     {
         import std.format;
-        return format("Font(family=%s, size=%s, weight=%s, slant=%s, face=%s)", font.family, font.size, font.weight, font.italic, font.face);
+
+        return format("Font(family=%s, size=%s, weight=%s, slant=%s, face=%s)", font.family, font.size, font.weight,
+            font.italic, font.face);
     }
 }
 
@@ -100,7 +105,9 @@ class DrawLine : DisplayCommand
     override string toString() const
     {
         import std.format;
-        return format("DrawLine(top=%s, left=%s, bottom=%s, right=%s, color=%s, thickness=%s)", top, left, bottom, right, color, thickness);
+
+        return format("DrawLine(top=%s, left=%s, bottom=%s, right=%s, color=%s, thickness=%s)", top, left, bottom,
+            right, color, thickness);
     }
 }
 
@@ -120,13 +127,16 @@ class DrawOutline : DisplayCommand
 
     override void execute(int scroll, DrawBuf buf)
     {
-        buf.drawFrame(Rect(left, top - scroll, right, bottom - scroll), getColor(color), Rect(thickness, thickness, thickness, thickness), COLOR_TRANSPARENT);
+        buf.drawFrame(Rect(left, top - scroll, right, bottom - scroll), getColor(color), Rect(thickness, thickness,
+                thickness, thickness), COLOR_TRANSPARENT);
     }
 
     override string toString() const
     {
         import std.format;
-        return format("DrawOutline(top=%s, left=%s, bottom=%s, right=%s, color=%s, thickness=%s)", top, left, bottom, right, color, thickness);
+
+        return format("DrawOutline(top=%s, left=%s, bottom=%s, right=%s, color=%s, thickness=%s)", top, left, bottom,
+            right, color, thickness);
     }
 }
 

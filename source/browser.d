@@ -79,7 +79,7 @@ final class Browser
         foreach (i, tab; tabs)
         {
             int tabNum = i.to!int;
-            dstring name = "Tab " ~ tabNum.to!dstring;
+            string name = "Tab " ~ tabNum.to!string;
             int x1 = 40 + 80 * tabNum;
             int x2 = 120 + 80 * tabNum;
 
@@ -101,13 +101,13 @@ final class Browser
         displayList ~= new DrawOutline(40, 50, WIDTH - 10, 90, color, 1);
         if (focus == "address bar")
         {
-            displayList ~= new DrawText(55, 55, addressBar.to!dstring, buttonFont, color);
+            displayList ~= new DrawText(55, 55, addressBar, buttonFont, color);
             auto w = buttonFont.textSize(addressBar.to!dstring).x;
             displayList ~= new DrawLine(55 + w, 55, 55 + w, 85, color, 1);
         }
         else if (tabs)
         {
-            auto url = tabs[activeTab].url.toString().to!dstring;
+            auto url = tabs[activeTab].url.toString();
             displayList ~= new DrawText(55, 55, url, buttonFont, color);
         }
 
