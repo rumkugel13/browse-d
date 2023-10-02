@@ -1,6 +1,6 @@
 #!dub
 /+ dub.sdl:
-	name "hello"
+	name "server"
     dependency "urllibparse" version="*"
 +/
 
