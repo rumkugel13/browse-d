@@ -9,7 +9,7 @@
 	"subConfigurations": {
 		"openssl": "library-applink"
 	},
-	"libs": ["libcrypto", "libssl"],
+	"libs": ["libs/libcrypto", "libs/libssl"],
 	"versions": ["DeimosOpenSSL_1_1_0"],
 	"excludedSourceFiles": ["source/server.d"]
 }
