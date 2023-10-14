@@ -67,6 +67,16 @@ Font getFont(Node node)
     return getCachedFont(size, weight, style, family);
 }
 
+int linespace(Font font)
+{
+    return font.height();
+}
+
+int wordWidth(Font font, string word)
+{
+    return font.textSize(word.to!dstring).x;
+}
+
 struct FontKey
 {
     int size;
@@ -209,13 +219,13 @@ class BlockLayout
         line.children ~= input;
         previousWord = input;
         auto font = getFont(node);
-        cursor_x += w + font.textSize(" ").x;
+        cursor_x += w + font.wordWidth(" ");
     }
 
     void word(Node node, string word)
     {
         auto font = getFont(node);
-        auto wordWidth = font.textSize(word.to!dstring).x;
+        auto wordWidth = font.wordWidth(word);
         if (cursor_x + wordWidth > this.width)
         {
             newLine();
@@ -226,7 +236,7 @@ class BlockLayout
         line.children ~= text;
         previousWord = text;
 
-        cursor_x += wordWidth + font.textSize(" ").x;
+        cursor_x += wordWidth + font.wordWidth(" ");
     }
 
     void newLine()
@@ -410,10 +420,10 @@ class TextLayout : BlockLayout
     {
         this.font = getFont(node);
 
-        this.width = font.textSize(word.to!dstring).x;
+        this.width = font.wordWidth(word);
         if (previous)
         {
-            auto space = (cast(TextLayout)previous).font.textSize(" ").x;
+            auto space = (cast(TextLayout)previous).font.wordWidth(" ");
             this.x = previous.x + space + previous.width;
         }
         else 
@@ -421,7 +431,7 @@ class TextLayout : BlockLayout
             this.x = parent.x;
         }
 
-        this.height = this.font.height();
+        this.height = linespace(this.font);
     }
 
     override void paint(ref DisplayList displayList)
@@ -453,7 +463,7 @@ class InputLayout : TextLayout
         this.width = INPUT_WIDTH_PX;
         if (previous)
         {
-            auto space = (cast(TextLayout)previous).font.textSize(" ").x;
+            auto space = (cast(TextLayout)previous).font.wordWidth(" ");
             this.x = previous.x + space + previous.width;
         }
         else 
@@ -461,7 +471,7 @@ class InputLayout : TextLayout
             this.x = parent.x;
         }
 
-        this.height = this.font.height();
+        this.height = linespace(this.font);
     }
 
     override void paint(ref DisplayList displayList)
@@ -509,7 +519,7 @@ class InputLayout : TextLayout
 
         if (node.isFocused)
         {
-            auto cx = x + font.textSize(text.to!dstring).x;
+            auto cx = x + font.wordWidth(text);
             displayList ~= new DrawLine(cx, y, cx, y + height, "black", 1);
         }
     }
