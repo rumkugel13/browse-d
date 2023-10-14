@@ -15,7 +15,7 @@ import std.utf : toUTF8;
 import std.concurrency : spawn;
 import urllibparse : unquotePlus;
 
-shared auto ENTRIES = ["stromkugel was here"];
+shared auto ENTRIES = ["This is the first entry"];
 const auto SOCK_BUF = 4 * 1024;
 
 struct ResponseData

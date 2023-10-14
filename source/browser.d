@@ -21,7 +21,7 @@ final class Browser
     this()
     {
         // create window
-        window = Platform.instance.createWindow("Drowsey", null, WindowFlag.Resizable, WIDTH, HEIGHT);
+        window = Platform.instance.createWindow("Browse-d", null, WindowFlag.Resizable, WIDTH, HEIGHT);
 
         // create some widget to show in window
         canvas = new CanvasWidget();
