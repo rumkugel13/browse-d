@@ -379,7 +379,7 @@ class LineLayout : BlockLayout
         }
 
         auto maxDescent = descents.maxElement;
-        this.height = (maxAscent + maxDescent) * 5 / 4;
+        this.height = (maxAscent + maxDescent).to!int * 5 / 4;
     }
 
     override void paint(ref DisplayList displayList)
