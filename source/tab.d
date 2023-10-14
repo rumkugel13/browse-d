@@ -86,7 +86,7 @@ class Tab
             }
             rules ~= new CSSParser(r.htmlBody).parse();
         }
-        writeln("Requests took " ~ sw.peek().toString);
+        writeln("CSS Requests took " ~ sw.peek().toString);
         sw.reset();
 
         render();
@@ -96,8 +96,8 @@ class Tab
 
     void render()
     {
-        foreach (rule; rules)
-            writeln(rule);
+        // foreach (rule; rules)
+        //     writeln(rule);
         if (darkMode)
             INHERITED_PROPERTIES["color"] = "white";
         else
