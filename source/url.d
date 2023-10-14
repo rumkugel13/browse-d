@@ -132,7 +132,7 @@ final class URL
 
         tcpSocket.send(makeRequest(payload).toUTF8);
 
-        char[1024*64] buf;
+        char[1024*4] buf;
         string receivedData;
         long bytesRead;
 
@@ -191,7 +191,7 @@ final class URL
         auto request = makeRequest(payload).toUTF8;
         SSL_write(ssl, request.ptr, cast(int)request.length);
 
-        char[1024*64] buf;
+        char[1024*4] buf;
         string receivedData;
         long bytesRead;
 
