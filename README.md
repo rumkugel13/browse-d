@@ -1,6 +1,6 @@
-# Drowsey: A Web Browser in D
+# Browse-d: A Toy Web Browser in D
 
-Based on [the browser book](https://browser.engineering/)
+Based on [Web Browser Engineering](https://browser.engineering/)
 
 ## Progress
 
