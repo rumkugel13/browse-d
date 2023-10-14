@@ -10,7 +10,7 @@
             "dubBuild": true,
             "name": "Build & Debug DUB project",
             "cwd": "${command:dubWorkingDirectory}",
-            "program": "${command:dubTarget}"
+            "program": "bin/${command:dubTarget}"
         }
     ]
 }

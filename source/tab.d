@@ -1,6 +1,7 @@
 module tab;
 
-import std.file : readText;
+import std.file : readText, thisExePath;
+import std.path : dirName;
 import std.algorithm : sort, max, min;
 import std.range : array;
 import std.stdio : writeln;
@@ -30,7 +31,7 @@ class Tab
 
     this(bool darkMode = false)
     {
-        defaultStyleSheet = new CSSParser(readText("browser.css")).parse();
+        defaultStyleSheet = new CSSParser(readText(dirName(thisExePath()) ~ "/browser.css")).parse();
         this.darkMode = darkMode;
     }
 
