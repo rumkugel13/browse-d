@@ -39,8 +39,15 @@ void start()
     writeln("Listening on port 8000...");
     while(true)
     {
-        auto conn = socket.accept();
-        spawn(&handleConnection, cast(shared)conn);
+        try{
+            auto conn = socket.accept();
+            spawn(&handleConnection, cast(shared) conn);
+        }
+        catch (SocketAcceptException e)
+        {
+            writeln(e.msg);
+            break;
+        }
     }
     socket.release();
     socket.close();
