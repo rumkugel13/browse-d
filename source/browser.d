@@ -42,6 +42,12 @@ final class Browser
         newTab.load(url, string.init);
         activeTab = tabs.length;
         tabs ~= newTab;
+        draw();
+    }
+
+    void draw()
+    {
+        canvas.invalidate(); // mark to redraw
     }
 
     void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc)
@@ -215,31 +221,37 @@ final class Browser
     void handleDown()
     {
         tabs[activeTab].scrollDown();
+        draw();
     }
 
     void handleUp()
     {
         tabs[activeTab].scrollUp();
+        draw();
     }
 
     void handlePageDown()
     {
         tabs[activeTab].pageDown();
+        draw();
     }
 
     void handlePageUp()
     {
         tabs[activeTab].pageUp();
+        draw();
     }
 
     void handleHome()
     {
         tabs[activeTab].jumpUp();
+        draw();
     }
 
     void handleEnd()
     {
         tabs[activeTab].jumpDown();
+        draw();
     }
 
     void handleEnter()
@@ -249,6 +261,7 @@ final class Browser
             tabs[activeTab].load(new URL(addressBar), string.init);
             focus = "";
         }
+        draw();
     }
 
     void handleInput(string text)
@@ -266,6 +279,7 @@ final class Browser
         {
             tabs[activeTab].keyPress(text.to!string);
         }
+        draw();
     }
 
     void handleBack()
@@ -278,6 +292,7 @@ final class Browser
         {
             tabs[activeTab].backspace();
         }
+        draw();
     }
 
     void handleLeftClick(int x, int y)
@@ -310,5 +325,7 @@ final class Browser
         // tabs[activeTab].toggleDarkMode();
         foreach (tab; tabs)
             tab.toggleDarkMode();
+        
+        draw();
     }
 }
