@@ -1,7 +1,7 @@
 module displaycommand;
 
 import dlangui;
-import std.string : startsWith, join;
+import std.string : startsWith, join, toLower, replace;
 import std.algorithm : map, each;
 import std.conv : to;
 
@@ -15,7 +15,7 @@ abstract class DisplayCommand
     override string toString() const { return ""; }
 }
 
-class DrawText : DisplayCommand
+final class DrawText : DisplayCommand
 {
     string text;
     Font font;
@@ -153,6 +153,12 @@ uint getColor(string color)
     }
     else 
     {
+        foreach (col; __traits(allMembers, Color))
+        {
+            if (col.replace("_", "").toLower == color)
+                return __traits(getMember, Color, col);
+        }
+
         return decodeCSSColor(color);
     }
 }
