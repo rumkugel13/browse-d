@@ -9,7 +9,7 @@
 	"subConfigurations": {
 		"openssl": "library-applink"
 	},
-	"libs": ["libs/libcrypto", "libs/libssl"],
+	"libs-posix":["ssl", "crypto"],
 	"versions": ["DeimosOpenSSL_1_1_0"],
 	"excludedSourceFiles": ["source/server.d"],
 	"copyFiles-windows-x86_64": ["libs/libcrypto-1_1-x64.dll", "libs/libssl-1_1-x64.dll"],
