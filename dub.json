@@ -14,5 +14,5 @@
 	"excludedSourceFiles": ["source/server.d"],
 	"copyFiles-windows-x86_64": ["libs/libcrypto-1_1-x64.dll", "libs/libssl-1_1-x64.dll"],
 	"copyFiles": ["source/browser.css"],
-	"targetPath": "/bin"
+	"targetPath": "bin"
 }
