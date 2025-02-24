@@ -68,6 +68,7 @@ final class URL
 
     HttpResponse request(string payload = string.init, int redirect = 10)
     {
+        writeln("URL: Requesting " ~ this.toString());
         if (redirect == 0) return HttpResponse.init; // too many redirects
         
         method = (payload.empty) ? "GET" : "POST";
