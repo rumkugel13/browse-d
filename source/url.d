@@ -69,8 +69,12 @@ final class URL
     HttpResponse request(string payload = string.init, int redirect = 10)
     {
         writeln("URL: Requesting " ~ this.toString());
-        if (redirect == 0) return HttpResponse.init; // too many redirects
-        
+        if (redirect == 0)
+        {
+            writeln("URL: Too many redirects");
+            return HttpResponse.init;
+        }
+
         method = (payload.empty) ? "GET" : "POST";
 
         string receivedData;
@@ -79,7 +83,8 @@ final class URL
         else
             receivedData = requestHttp(payload);
 
-        if (receivedData.empty) return HttpResponse.init;
+        if (receivedData.empty)
+            return HttpResponse.init;
 
         auto temp = receivedData.findSplit("\r\n");
 
@@ -106,7 +111,7 @@ final class URL
         assert("transfer-encoding" !in responseHeaders, "Unsupported header: " ~ "transfer-encoding");
         assert("content-encoding" !in responseHeaders, "Unsupported header: " ~ "content-encoding");
 
-        auto responseBody = temp[2][2..$];
+        auto responseBody = temp[2][2 .. $];
 
         return HttpResponse(responseHeaders, responseBody);
     }
@@ -133,7 +138,7 @@ final class URL
 
         tcpSocket.send(makeRequest(payload).toUTF8);
 
-        char[1024*4] buf;
+        char[1024 * 4] buf;
         string receivedData;
         long bytesRead;
 
@@ -157,15 +162,16 @@ final class URL
 
         SSL_load_error_strings();
 
-        SSL_CTX *ctx = SSL_CTX_new(TLS_client_method());
-	    assert(!(ctx is null));
-        scope(exit) SSL_CTX_free(ctx);
+        SSL_CTX* ctx = SSL_CTX_new(TLS_client_method());
+        assert(!(ctx is null));
+        scope (exit)
+            SSL_CTX_free(ctx);
 
         // SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, null);
         // SSL_CTX_set_default_verify_paths(ctx);
 
-        SSL *ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, cast(int)tcpSocket.handle());
+        SSL* ssl = SSL_new(ctx);
+        SSL_set_fd(ssl, cast(int) tcpSocket.handle());
 
         SSL_set_tlsext_host_name(ssl, host.ptr);
         SSL_set1_host(ssl, host.ptr);
@@ -182,7 +188,7 @@ final class URL
             // ERR_print_errors_fp(cast(shared(_iobuf)*)stderr);
             return string.init;
         }
-        scope(exit)
+        scope (exit)
         {
             SSL_shutdown(ssl);
             SSL_free(ssl);
@@ -190,9 +196,9 @@ final class URL
         writeln("URL: SSL success");
 
         auto request = makeRequest(payload).toUTF8;
-        SSL_write(ssl, request.ptr, cast(int)request.length);
+        SSL_write(ssl, request.ptr, cast(int) request.length);
 
-        char[1024*4] buf;
+        char[1024 * 4] buf;
         string receivedData;
         long bytesRead;
 
@@ -206,14 +212,16 @@ final class URL
 
     URL resolve(string url)
     {
-        if (url.canFind("://")) return new URL(url);
+        if (url.canFind("://"))
+            return new URL(url);
         if (!url.startsWith("/"))
         {
             import std.string : lastIndexOf, indexOf;
+
             auto i = path.lastIndexOf("/"); // pythons rsplit workaround
             if (i != -1)
             {
-                auto dir = path[0..i];
+                auto dir = path[0 .. i];
                 while (url.startsWith("../"))
                 {
                     url = url.findSplit("/")[2]; // pythons split(x, 1) workaround
@@ -222,7 +230,7 @@ final class URL
                         auto k = dir.lastIndexOf("/");
                         if (k != -1)
                         {
-                            dir = dir[0..k];
+                            dir = dir[0 .. k];
                         }
                     }
                 }
@@ -268,6 +276,7 @@ final class URL
             portPart = "";
 
         import std.string : format;
+
         return format("%s://%s%s%s", scheme, host, portPart, path);
     }
 }
