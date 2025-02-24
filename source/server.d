@@ -36,7 +36,7 @@ void start()
     auto addr = new InternetAddress(8000);
     socket.bind(addr);
     socket.listen(1);
-    writeln("Listening on port 8000...");
+    writeln("Server: Listening on port 8000...");
     while(true)
     {
         try{
@@ -45,7 +45,7 @@ void start()
         }
         catch (SocketAcceptException e)
         {
-            writeln(e.msg);
+            writeln("Server: " ~ e.msg);
             break;
         }
     }
@@ -56,7 +56,7 @@ void start()
 void handleConnection(shared Socket s)
 {
     Socket socket = cast(Socket)s;
-    writeln("New Connection: ", socket.remoteAddress);
+    writeln("Server: New Connection: ", socket.remoteAddress);
     char[] readBuffer = new char[SOCK_BUF];
     size_t available = 0;
 
@@ -80,14 +80,14 @@ void handleConnection(shared Socket s)
         headers[line[0 .. index].toLower] = line[index + 1 .. $];
     }
 
-    writeln("Got ", headers.length, " headers");
+    writeln("Server: Got ", headers.length, " headers");
 
     string body = "";
     if ("content-length" in headers)
     {
         auto length = headers["content-length"].strip.to!int;
         auto data = socket.read(length, readBuffer, available);
-        writeln("Got ", data.length, " bytes of data");
+        writeln("Server: Got ", data.length, " bytes of data");
         body ~= data;
     }
 
@@ -97,7 +97,7 @@ void handleConnection(shared Socket s)
     response ~= "Content-Length: " ~ responseData.body.toUTF8.length.to!string ~ "\r\n";
     response ~= "\r\n" ~ responseData.body;
     socket.send(response);
-    writeln("Closing Connection: ", socket.remoteAddress);
+    writeln("Server: Closing Connection: ", socket.remoteAddress);
     socket.close();
 }
 

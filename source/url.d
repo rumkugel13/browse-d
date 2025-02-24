@@ -112,7 +112,7 @@ final class URL
 
     HttpStatus parseStatus(string statusLine)
     {
-        writeln(statusLine);
+        writeln("URL: " ~ statusLine);
         auto splitStatus = statusLine.split();
         auto httpVersion = splitStatus[0];
         auto statusCode = splitStatus[1];
@@ -128,7 +128,7 @@ final class URL
             tcpSocket.close();
         auto address = new InternetAddress(host, port);
         tcpSocket.connect(address);
-        writeln("Socket connected to " ~ host ~ ":" ~ port.to!string);
+        writeln("URL: Socket connected to " ~ host ~ ":" ~ port.to!string);
 
         tcpSocket.send(makeRequest(payload).toUTF8);
 
@@ -152,7 +152,7 @@ final class URL
 
         auto address = new InternetAddress(host, port);
         tcpSocket.connect(address);
-        writeln("Socket connected to " ~ host ~ ":" ~ port.to!string);
+        writeln("URL: Socket connected to " ~ host ~ ":" ~ port.to!string);
 
         SSL_load_error_strings();
 
@@ -172,7 +172,7 @@ final class URL
         auto result = SSL_connect(ssl);
         if (result == -1)
         {
-            writeln("Error ssl connect");
+            writeln("URL: Error ssl connect");
             char[256] buf;
             ERR_error_string(ERR_get_error(), buf.ptr);
             writeln(buf);
@@ -186,7 +186,7 @@ final class URL
             SSL_shutdown(ssl);
             SSL_free(ssl);
         }
-        writeln("SSL success");
+        writeln("URL: SSL success");
 
         auto request = makeRequest(payload).toUTF8;
         SSL_write(ssl, request.ptr, cast(int)request.length);

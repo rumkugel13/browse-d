@@ -47,7 +47,7 @@ class Tab
 
     void handleResponse(HttpResponse response)
     {
-        writeln("Request took " ~ sw.peek().toString);
+        writeln("Tab: Request took " ~ sw.peek().toString);
         sw.reset();
         auto parser = new HTMLParser(response.htmlBody);
 //         auto test = "<pre class='sourceCode python'><code class='sourceCode python'><span id='cb6-1'><a href='#cb6-1' aria-hidden='true' tabindex='-1'></a><span class='kw'>class</span> URL:</span>
@@ -58,7 +58,7 @@ class Tab
 //         auto parser = new HTMLParser(test);
         tree = parser.parse();
         // parser.printTree(tree, 0);
-        writeln("Parsing took " ~ sw.peek().toString);
+        writeln("Tab: Parsing took " ~ sw.peek().toString);
         sw.reset();
         rules = defaultStyleSheet.dup;
 
@@ -87,11 +87,11 @@ class Tab
             }
             rules ~= new CSSParser(r.htmlBody).parse();
         }
-        writeln("CSS Requests took " ~ sw.peek().toString);
+        writeln("Tab: CSS Requests took " ~ sw.peek().toString);
         sw.reset();
 
         render();
-        writeln("Rendering took " ~ sw.peek().toString);
+        writeln("Tab: Rendering took " ~ sw.peek().toString);
         sw.stop();
     }
 

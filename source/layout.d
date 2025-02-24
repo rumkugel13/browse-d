@@ -502,13 +502,13 @@ class InputLayout : TextLayout
                         text = textNode.text;
                     }
                     else {
-                        writeln("Ignoring HTML contents inside button");
+                        writeln("Layout: Ignoring HTML contents inside button");
                         text = "";
                     }
                 }
                 else 
                 {
-                    writeln("Ignoring HTML contents inside button");
+                    writeln("Layout: Ignoring HTML contents inside button");
                         text = "";
                 }
             }
