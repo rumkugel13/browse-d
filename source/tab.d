@@ -57,7 +57,7 @@ class Tab
 // <span id='cb6-5'><a href='#cb6-5' aria-hidden='true' tabindex='-1'></a>            <span class='st'>'Unknown scheme </span><span class='sc'>{}</span><span class='st'>'</span>.<span class='bu'>format</span>(<span class='va'>self</span>.scheme)</span></code></pre>";
 //         auto parser = new HTMLParser(test);
         tree = parser.parse();
-        parser.printTree(tree, 0);
+        // parser.printTree(tree, 0);
         writeln("Parsing took " ~ sw.peek().toString);
         sw.reset();
         rules = defaultStyleSheet.dup;
