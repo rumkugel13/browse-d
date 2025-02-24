@@ -195,8 +195,9 @@ class CSSParser
     KeyValuePair mediaQuery()
     {
         literal('@');
-        if (word() != "media")
-            throw new Exception("Unsupported media query");
+        auto word = word();
+        if (word != "media")
+            throw new Exception("Unsupported media query: " ~ word);
         // assert(word() == "media");
         whitespace();
         literal('(');
