@@ -4,7 +4,7 @@
 	"dependencies": {
 		"urllibparse": "~>0.1.0",
 		"openssl": "~>3.3.3",
-		"dlangui": "~>0.10.4"
+		"dlangui": "~>0.10.8"
 	},
 	"subConfigurations": {
 		"openssl": "library-applink"
