@@ -38,7 +38,7 @@ final class Browser
 
     void load(URL url)
     {
-        auto newTab = new Tab(darkMode);
+        auto newTab = new Tab(darkMode, window.width);
         newTab.load(url, string.init);
         activeTab = tabs.length;
         tabs ~= newTab;

@@ -28,11 +28,13 @@ class Tab
     StopWatch sw;
     Element focus;
     bool darkMode;
+    int width;
 
-    this(bool darkMode = false)
+    this(bool darkMode = false, int width = WIDTH)
     {
         defaultStyleSheet = new CSSParser(readText(dirName(thisExePath()) ~ "/browser.css")).parse();
         this.darkMode = darkMode;
+        this.width = width;
     }
 
     void load(URL url, string body)
@@ -103,7 +105,7 @@ class Tab
             INHERITED_PROPERTIES["color"] = "white";
         else
             INHERITED_PROPERTIES["color"] = "black";
-        style(tree, rules.sort.array, darkMode, document.width);
+        style(tree, rules.sort.array, this.darkMode, this.width);
         // foreach (rule; rules)
         //     writeln(rule);
         document = new DocumentLayout(tree);
