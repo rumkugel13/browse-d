@@ -217,8 +217,8 @@ class CSSParser
             {
                 literal('>');
                 whitespace();
-                auto descendant = simpleSelector();
-                selector = new ChildSelector(selector, descendant);
+                auto child = simpleSelector();
+                selector = new ChildSelector(selector, child);
                 whitespace();
             }
             else
