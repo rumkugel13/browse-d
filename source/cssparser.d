@@ -56,8 +56,8 @@ class CSSParser
         }
 
         if (!(pos > start))
-            throw new Exception("Parsing error, expected a word, got " ~ ((pos < text.length) ? text[pos].to!string
-                    : "EOF"));
+            throw new Exception("Parsing error at " ~ getPositionInfo() ~ ": expected a word, got " ~ 
+                ((pos < text.length) ? text[pos].to!string : "EOF"));
 
         return text[start..pos];
     }
@@ -65,8 +65,8 @@ class CSSParser
     void literal(char lit)
     {
         if (!(pos < text.length && text[pos] == lit))
-            throw new Exception("Parsing error, expected a literal " ~ lit ~ " got " ~ (
-                    (pos < text.length) ? text[pos].to!string : "EOF"));
+            throw new Exception("Parsing error at " ~ getPositionInfo() ~ ": expected a literal '" ~ lit ~ 
+                "' got " ~ ((pos < text.length) ? text[pos].to!string : "EOF"));
         pos++;
     }
 
@@ -197,7 +197,7 @@ class CSSParser
         literal('@');
         auto word = word();
         if (word != "media")
-            throw new Exception("Unsupported media query: " ~ word);
+            throw new Exception("Parsing error at " ~ getPositionInfo() ~ ": unsupported media query: " ~ word);
         // assert(word() == "media");
         whitespace();
         literal('(');
@@ -262,6 +262,27 @@ class CSSParser
             }
         }
         return rules;
+    }
+
+    private string getPositionInfo()
+    {
+        int line = 1;
+        int column = 1;
+        
+        for (int i = 0; i < pos; i++)
+        {
+            if (text[i] == '\n')
+            {
+                line++;
+                column = 1;
+            }
+            else
+            {
+                column++;
+            }
+        }
+        
+        return "line " ~ line.to!string ~ ", column " ~ column.to!string;
     }
 }
 
