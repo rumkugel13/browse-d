@@ -14,11 +14,12 @@ alias Body = string[string];
 struct Rule
 {
     string media;
+    string maxWidth;
     Selector selector;
     Body body;
 
-    int opCmp(ref const Rule r) const 
-    {  
+    int opCmp(ref const Rule r) const
+    {
         return (selector.priority > r.selector.priority) - (selector.priority < r.selector.priority);
     }
 }
@@ -36,27 +37,36 @@ class CSSParser
 
     void whitespace()
     {
-        comment();
-        while (pos < text.length && text[pos].isWhite)
-            pos++;
+        whitespaceOrcomment();
     }
 
-    void comment()
+    void whitespaceOrcomment()
     {
-        if (pos + 1 < text.length && text[pos] == '/' && text[pos + 1] == '*')
+        while (pos < text.length)
         {
-            pos += 2; // skip /*
-            while (pos + 1 < text.length && !(text[pos] == '*' && text[pos + 1] == '/'))
+            if (text[pos].isWhite)
             {
                 pos++;
             }
-            if (pos + 1 < text.length)
+            else if (pos + 1 < text.length && text[pos] == '/' && text[pos + 1] == '*')
             {
-                pos += 2; // skip */
+                pos += 2; // skip /*
+                while (pos + 1 < text.length && !(text[pos] == '*' && text[pos + 1] == '/'))
+                {
+                    pos++;
+                }
+                if (pos + 1 < text.length)
+                {
+                    pos += 2; // skip */
+                }
+                else
+                {
+                    throw new Exception("Parsing error at " ~ getPositionInfo() ~ ": expected '*/' to close comment, got EOF");
+                }
             }
             else
             {
-                throw new Exception("Parsing error at " ~ getPositionInfo() ~ ": expected '*/' to close comment, got EOF");
+                break;
             }
         }
     }
@@ -94,7 +104,7 @@ class CSSParser
     string untilChar(char[] chars)
     {
         auto start = this.pos;
-        while(pos < text.length && !chars.canFind(text[pos]))
+        while (pos < text.length && !chars.canFind(text[pos]))
             pos++;
         return text[start..pos];
     }
@@ -126,7 +136,7 @@ class CSSParser
         {
             try
             {
-                auto propVal = pair([';','}']);
+                auto propVal = pair([';', '}']);
                 pairs[propVal.key.toLower] = propVal.value;
                 whitespace();
                 literal(';');
@@ -135,6 +145,7 @@ class CSSParser
             catch (Exception e)
             {
                 import std.stdio;
+
                 writeln("CSSParser: " ~ e.msg);
                 auto why = ignoreUntil([';', '}']);
                 if (why == ';')
@@ -223,6 +234,8 @@ class CSSParser
         whitespace();
         literal('(');
         auto pair = pair();
+        if (!["prefers-color-scheme", "max-width"].canFind(pair.key))
+            throw new Exception("Parsing error at " ~ getPositionInfo() ~ ": unsupported media query type: " ~ pair.key);
         whitespace();
         literal(')');
         return pair;
@@ -232,26 +245,33 @@ class CSSParser
     {
         Rule[] rules;
         auto media = string.init;
+        auto maxWidth = string.init;
         whitespace();
         while (pos < text.length)
         {
             try
             {
-                if (text[pos] == '@' && media == string.init)
+                if (text[pos] == '@' && media == string.init && maxWidth == string.init)
                 {
                     auto propVal = mediaQuery();
                     if (propVal.key == "prefers-color-scheme" && ["dark", "light"].canFind(propVal.value))
                     {
                         media = propVal.value;
                     }
+                    else if (propVal.key == "max-width" && propVal.value.endsWith("px"))
+                    {
+                        maxWidth = propVal.value;
+                    }
+
                     whitespace();
                     literal('{');
                     whitespace();
                 }
-                else if(text[pos] == '}' && media != string.init)
+                else if (text[pos] == '}' && (media != string.init || maxWidth != string.init))
                 {
                     literal('}');
                     media = string.init;
+                    maxWidth = string.init;
                     whitespace();
                 }
                 else
@@ -264,13 +284,14 @@ class CSSParser
                     whitespace();
                     foreach (selector; selectorList)
                     {
-                        rules ~= Rule(media, selector, b);
+                        rules ~= Rule(media, maxWidth, selector, b);
                     }
                 }
             }
             catch (Exception e)
             {
                 import std.stdio;
+
                 writeln("CSSParser: " ~ e.msg);
                 auto why = ignoreUntil(['}']);
                 if (why == '}')
@@ -287,9 +308,12 @@ class CSSParser
 
     private string getPositionInfo()
     {
+        if (pos < 0 || pos >= text.length)
+            return "position out of bounds";
+
         int line = 1;
         int column = 1;
-        
+
         for (int i = 0; i < pos; i++)
         {
             if (text[i] == '\n')
@@ -302,25 +326,25 @@ class CSSParser
                 column++;
             }
         }
-        
+
         return "line " ~ line.to!string ~ ", column " ~ column.to!string;
     }
 }
 
 string[string] INHERITED_PROPERTIES;
-shared static this() 
+shared static this()
 {
     INHERITED_PROPERTIES = [
-    "font-size": "16px",
-    "font-style": "normal",
-    "font-weight": "normal",
-    "font-family": "sans-serif",
-    "color": "black",
-    "text-align": "left"
+        "font-size": "16px",
+        "font-style": "normal",
+        "font-weight": "normal",
+        "font-family": "sans-serif",
+        "color": "black",
+        "text-align": "left"
     ];
 }
 
-void style(Node node, Rule[] rules, bool darkMode = false)
+void style(Node node, Rule[] rules, bool darkMode = false, float viewportWidth = float.max)
 {
     node.style.clear;
 
@@ -341,6 +365,12 @@ void style(Node node, Rule[] rules, bool darkMode = false)
         if (rule.media != string.init)
         {
             if ((rule.media == "dark") != darkMode)
+                continue;
+        }
+        if (rule.maxWidth != string.init)
+        {
+            auto maxWidth = rule.maxWidth[0 .. $ - 2].to!float; // remove 'px'
+            if (viewportWidth > maxWidth)
                 continue;
         }
         if (!rule.selector.matches(node))
@@ -368,7 +398,8 @@ void style(Node node, Rule[] rules, bool darkMode = false)
         {
             parentFontSize = node.parent.style["font-size"];
         }
-        else {
+        else
+        {
             parentFontSize = INHERITED_PROPERTIES["font-size"];
         }
         auto nodePct = node.style["font-size"][0..$-1].to!float / 100f;

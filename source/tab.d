@@ -103,7 +103,7 @@ class Tab
             INHERITED_PROPERTIES["color"] = "white";
         else
             INHERITED_PROPERTIES["color"] = "black";
-        style(tree, rules.sort.array, darkMode);
+        style(tree, rules.sort.array, darkMode, document.width);
         // foreach (rule; rules)
         //     writeln(rule);
         document = new DocumentLayout(tree);
