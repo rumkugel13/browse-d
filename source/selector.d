@@ -69,6 +69,30 @@ class ClassSelector : Selector
     }
 }
 
+class ChildSelector : Selector
+{
+    Selector parent, child;
+
+    this(Selector parent, Selector child)
+    {
+        this.parent = parent;
+        this.child = child;
+        this.priority = parent.priority + child.priority;
+    }
+
+    override bool matches(Node node)
+    {
+        if (!child.matches(node))
+            return false;
+        return parent.matches(node.parent);
+    }
+
+    override string toString() const pure @safe
+    {
+        return format("ChildSelector(parent=%s, child=%s, priority=%s)", parent, child, priority);
+    }
+}
+
 class DescendantSelector : Selector
 {
     Selector ancestor, descendant;

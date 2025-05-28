@@ -213,6 +213,14 @@ class CSSParser
                 selector = simpleSelector();
                 whitespace();
             }
+            else if (text[pos] == '>')
+            {
+                literal('>');
+                whitespace();
+                auto descendant = simpleSelector();
+                selector = new ChildSelector(selector, descendant);
+                whitespace();
+            }
             else
             {
                 auto descendant = simpleSelector();
