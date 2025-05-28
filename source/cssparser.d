@@ -36,8 +36,29 @@ class CSSParser
 
     void whitespace()
     {
+        comment();
         while (pos < text.length && text[pos].isWhite)
             pos++;
+    }
+
+    void comment()
+    {
+        if (pos + 1 < text.length && text[pos] == '/' && text[pos + 1] == '*')
+        {
+            pos += 2; // skip /*
+            while (pos + 1 < text.length && !(text[pos] == '*' && text[pos + 1] == '/'))
+            {
+                pos++;
+            }
+            if (pos + 1 < text.length)
+            {
+                pos += 2; // skip */
+            }
+            else
+            {
+                throw new Exception("Parsing error at " ~ getPositionInfo() ~ ": expected '*/' to close comment, got EOF");
+            }
+        }
     }
 
     string word()
